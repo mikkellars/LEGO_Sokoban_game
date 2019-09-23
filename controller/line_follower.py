@@ -21,28 +21,37 @@ o_both_wheel = MoveTank(OUTPUT_A, OUTPUT_B)
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
-def follow(intersection_det): # Svag over for lys og kan ikke tage skarpe sving
-   
-    speed_cs_r = i_cs_r.reflected_light_intensity / 2
-    speed_cs_l = i_cs_l.reflected_light_intensity / 2 
+def follow(suspend): # Svag over for lys og kan ikke tage skarpe sving
+    if not suspend:
+        speed_cs_r = i_cs_r.reflected_light_intensity / 2
+        speed_cs_l = i_cs_l.reflected_light_intensity / 2 
 
-    # Sharp corner add-on
-    if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
-         speed_cs_r = -20
-    if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
-        speed_cs_l = -20
+        # Sharp corner add-on
+        if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
+            speed_cs_r = -20
+        if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
+            speed_cs_l = -20
 
-    o_wheel_l.duty_cycle_sp = speed_cs_l
-    o_wheel_r.duty_cycle_sp = speed_cs_r
+        o_wheel_l.duty_cycle_sp = speed_cs_l
+        o_wheel_r.duty_cycle_sp = speed_cs_r
 
-    o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
-    o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
+        o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
+        o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
-    if i_cs_r.color == 1 and i_cs_l.color == 1 and intersection_det == False:
-        intersection_det = True
-
-    return intersection_det
 
 def print_color_values():
     print("Left color sensor value: " + str(i_cs_r.reflected_light_intensity))
     print("Right color sensor value: " + str(i_cs_l.reflected_light_intensity))
+
+def intersection():
+    result = False
+    if  i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0 and i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
+        result = True
+    return result
+
+def run_forward(seconds):
+   o_both_wheel.on_for_seconds(10,10,seconds)
+
+def stop():
+    o_wheel_l.command = LargeMotor.COMMAND_STOP
+    o_wheel_r.command = LargeMotor.COMMAND_STOP
