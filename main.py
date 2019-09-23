@@ -20,7 +20,8 @@ while 1:
     #line_follower.color_follow()
     
     # Print
-    count + 1
-    if count % 1000000000 == 0:
-        line_follower.print_color_values()
-        count = 0
+    # count + 1
+    # if count % 1000000000 == 0:
+    #     line_follower.print_color_values()
+    #     count = 0
+    

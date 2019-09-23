@@ -17,6 +17,7 @@ o_wheel_r    = LargeMotor(OUTPUT_B)
 o_both_wheel = MoveTank(OUTPUT_A, OUTPUT_B)
 #o_lift       = MediumMotor(OUTPUT_B)
 
+
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
@@ -37,8 +38,8 @@ def follow(intersection_det): # Svag over for lys og kan ikke tage skarpe sving
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
-    # if i_cs_r.color == 1 and i_cs_l.color == 1 and intersection_det == False:
-    #     intersection_det = True
+    if i_cs_r.color == 1 and i_cs_l.color == 1 and intersection_det == False:
+        intersection_det = True
 
     return intersection_det
 
