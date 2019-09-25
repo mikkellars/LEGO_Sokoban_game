@@ -1,7 +1,7 @@
 ###############################################
 ##               LIBARY IMPORT               ##
 ###############################################
-from ev3dev2.motor import LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_D, MoveTank, SpeedPercent
+from ev3dev2.motor import LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_D, MoveTank, SpeedPercent, MoveSteering
 from ev3dev2.sensor.lego import ColorSensor
 from ev3dev2.sensor import INPUT_4, INPUT_1, INPUT_2
 
@@ -9,12 +9,13 @@ from ev3dev2.sound import Sound
 ###############################################
 ##                I/O DEFINING               ##
 ###############################################
-i_cs_r       = ColorSensor(INPUT_4)
-i_cs_l       = ColorSensor(INPUT_1)
+i_cs_r          = ColorSensor(INPUT_4)
+i_cs_l          = ColorSensor(INPUT_1)
 
-o_wheel_l    = LargeMotor(OUTPUT_A)
-o_wheel_r    = LargeMotor(OUTPUT_B)
-o_both_wheel = MoveTank(OUTPUT_A, OUTPUT_B)
+o_wheel_l       = LargeMotor(OUTPUT_A)
+o_wheel_r       = LargeMotor(OUTPUT_B)
+o_both_wheel    = MoveTank(OUTPUT_A, OUTPUT_B)
+o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
 #o_lift       = MediumMotor(OUTPUT_B)
 
 
@@ -55,3 +56,14 @@ def run_forward(seconds):
 def stop():
     o_wheel_l.command = LargeMotor.COMMAND_STOP
     o_wheel_r.command = LargeMotor.COMMAND_STOP
+
+def turn_left():
+    o_both_wheel.on_for_seconds(10, 10, 0.8) 
+    o_both_steering.on_for_rotations(-100, SpeedPercent(20), 0.5)
+
+def turn_right():
+    o_both_wheel.on_for_seconds(10, 10, 0.8) 
+    o_both_steering.on_for_rotations(100, SpeedPercent(20), 0.5)
+
+def turn_backward():
+    o_both_steering.on_for_rotations(100, SpeedPercent(20), 1)

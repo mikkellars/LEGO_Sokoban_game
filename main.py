@@ -30,7 +30,9 @@ while 1:
         line_follower.stop()
         play_music.sound()
         t.sleep(2)
-        line_follower.run_forward(1)
+        #line_follower.run_forward(1)
+        #line_follower.turn_left()
+        line_follower.turn_backward()
         suspend = False
 
     # Print
