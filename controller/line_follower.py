@@ -61,8 +61,8 @@ def intersection():
     global t1_cs_intersection
     global t2_cs_intersection
     result = False
-    cs_l_val
-    cs_r_val
+    # cs_l_val
+    # cs_r_val
 
     # OLD NOT WORKING EVERY TIME
     # if  i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0 and i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
