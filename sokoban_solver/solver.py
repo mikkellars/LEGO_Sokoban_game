@@ -2,26 +2,15 @@
 
 # ______________________________________________________________________________
 # imports
-import math
-import random
-import sys
-import functools
-import heapq
+from utils import (
+    is_in,
+    memoize,
+    PriorityQueue,
+)
+from sokoban_games import game3
 
 # ______________________________________________________________________________
 # Sokoban Game Solver
-
-def is_valid_value(char):
-    if (char == ' ' or # floor
-        char == '#' or # wall
-        char == '@' or # worker on floor
-        char == '.' or # goal
-        char == '*' or # box on goal
-        char == '$' or # box
-        char == '+' ): # worker on goal
-        return True
-    else:
-        return False
 
 class Problem(object):
     """The abstract class for a formal problem."""
@@ -133,101 +122,20 @@ def best_first_graph_search(problem, f):
                     frontier.append(child)
     return None
 
-def is_in(elt, seq):
-    """Similar to (elt in seq), but compares with 'is', not '=='."""
-    return any(x is elt for x in seq)
+def init(board):
+    # global data, nrows, sdata, ddata, px, py
+    data = filter(None, board.splitlines())
+    nrows = max(len(r) for r in data)
+ 
+    maps = {' ':' ', '.': '.', '@':' ', '#':'#', '$':' '}
+    mapd = {' ':' ', '.': ' ', '@':'@', '#':' ', '$':'*'}
+ 
+    for r, row in enumerate(data):
+        for c, ch in enumerate(row):
+            sdata += maps[ch]
+            ddata += mapd[ch]
+            if ch == '@':
+                px = c
+                py = r
 
-def hamming_distance(X, Y):
-    return sum(x != y for x, y in zip(X, Y))
-
-def manhattan_distance(X, Y):
-    return sum(abs(x - y) for x, y in zip(X, Y))
-
-def distance(a, b):
-    """The distance between two (x, y) points."""
-    xA, yA = a
-    xB, yB = b
-    return math.hypot((xA - xB), (yA - yB))
-
-def distance_squared(a, b):
-    """The square of the distance between two (x, y) points."""
-    xA, yA = a
-    xB, yB = b
-    return (xA - xB) ** 2 + (yA - yB) ** 2
-
-def memoize(fn, slot=None, maxsize=32):
-    """Memoize fn: make it remember the computed value for any argument list.
-    If slot is specified, store result in that slot of first argument.
-    If slot is false, use lru_cache for caching the values."""
-    if slot:
-        def memoized_fn(obj, *args):
-            if hasattr(obj, slot):
-                return getattr(obj, slot)
-            else:
-                val = fn(obj, *args)
-                setattr(obj, slot, val)
-                return val
-    else:
-        @functools.lru_cache(maxsize=maxsize)
-        def memoized_fn(*args):
-            return fn(*args)
-
-    return memoized_fn
-
-class PriorityQueue:
-    """A Queue in which the minimum (or maximum) element (as determined by f and
-    order) is returned first.
-    If order is 'min', the item with minimum f(x) is
-    returned first; if order is 'max', then it is the item with maximum f(x).
-    Also supports dict-like lookup."""
-
-    def __init__(self, order='min', f=lambda x: x):
-        self.heap = []
-
-        if order == 'min':
-            self.f = f
-        elif order == 'max':  # now item with max f(x)
-            self.f = lambda x: -f(x)  # will be popped first
-        else:
-            raise ValueError("order must be either 'min' or 'max'.")
-
-    def append(self, item):
-        """Insert item at its correct position."""
-        heapq.heappush(self.heap, (self.f(item), item))
-
-    def extend(self, items):
-        """Insert each item in items at its correct position."""
-        for item in items:
-            self.append(item)
-
-    def pop(self):
-        """Pop and return the item (with min or max f(x) value)
-        depending on the order."""
-        if self.heap:
-            return heapq.heappop(self.heap)[1]
-        else:
-            raise Exception('Trying to pop from empty PriorityQueue.')
-
-    def __len__(self):
-        """Return current capacity of PriorityQueue."""
-        return len(self.heap)
-
-    def __contains__(self, key):
-        """Return True if the key is in PriorityQueue."""
-        return any([item == key for _, item in self.heap])
-
-    def __getitem__(self, key):
-        """Returns the first value associated with key in PriorityQueue.
-        Raises KeyError if key is not present."""
-        for value, item in self.heap:
-            if item == key:
-                return value
-        raise KeyError(str(key) + " is not in the priority queue")
-
-    def __delitem__(self, key):
-        """Delete the first occurrence of key."""
-        try:
-            del self.heap[[item == key for _, item in self.heap].index(True)]
-        except ValueError:
-            raise KeyError(str(key) + " is not in the priority queue")
-        heapq.heapify(self.heap)
+init(game3)
