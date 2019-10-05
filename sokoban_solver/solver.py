@@ -1,13 +1,26 @@
-""" Module for solving  a sokoban puzzle """
+""" Module for solving  a sokoban puzzle
+
+    '#' is a wall
+    ' ' is a free space
+    '$' is a box
+    '.' is a goal place
+    '*' is a box placed on a goal
+    '@' is for sokoban worker
+    '+' is for sokoban worker on a goal
+
+    "flrb" are the moves and uppercase, "FLRB" for pushes.
+"""
 
 # ______________________________________________________________________________
 # imports
+import numpy as np
+import math
 from utils import (
     is_in,
     memoize,
-    PriorityQueue,
+    PriorityQueue
 )
-from sokoban_games import game3
+import sokoban_games
 
 # ______________________________________________________________________________
 # Sokoban Game Solver
@@ -15,9 +28,10 @@ from sokoban_games import game3
 class Problem(object):
     """The abstract class for a formal problem."""
 
-    def __init__(self, initial, goal=None):
+    def __init__(self, board, initial, goal=None):
         """Creates a problem class which specifies the initial state, and possibly
         a goal state, if there is a unique goal"""
+        self.board = board
         self.initial = initial
         self.goal = goal
 
@@ -41,6 +55,11 @@ class Problem(object):
         """Returns the cost of a solution path that arrives at state2 from state1 with
         action, assuming cost c to get up to state1."""
         return c + 1
+
+    def h(self, node):
+        yN, xN = node.state
+        yS, xS = self.initial.state
+        return math.hypot((xN - xS), (yN - yS))
     
     def value(self, state):
         """For optimization problems, each state has a value. Hill-climbing and
@@ -104,7 +123,7 @@ def astar_search(problem, h=None):
 def best_first_graph_search(problem, f):
     """Search the nodes with the lowest f scores first."""
     f = memoize(f, 'f')
-    node = Node(problem.initial)
+    node = Node(problem.initial.state)
     frontier = PriorityQueue('min', f)
     frontier.append(node)
     explored = set()
@@ -122,20 +141,36 @@ def best_first_graph_search(problem, f):
                     frontier.append(child)
     return None
 
-def init(board):
-    # global data, nrows, sdata, ddata, px, py
-    data = filter(None, board.splitlines())
-    nrows = max(len(r) for r in data)
- 
-    maps = {' ':' ', '.': '.', '@':' ', '#':'#', '$':' '}
-    mapd = {' ':' ', '.': ' ', '@':'@', '#':' ', '$':'*'}
- 
-    for r, row in enumerate(data):
-        for c, ch in enumerate(row):
-            sdata += maps[ch]
-            ddata += mapd[ch]
-            if ch == '@':
-                px = c
-                py = r
+def generate_board(string_board):
+    lines = []
+    [lines.append(line) for line in string_board.splitlines()]
 
-init(game3)
+    w = 0
+    for line in lines:
+        if len(line) > w:
+            w = len(line)
+    h = len(lines)
+    board = [[0 for x in range(w)] for y in range(h)]
+
+    goal_points = []
+    for i, line in enumerate(lines):
+        for j, char in enumerate(line):
+            board[i][j] = char
+            if char == '@' or char == '+':
+                start_point = (i, j)
+            if char == '.' or char == '*':
+                goal_points.append((i, j))
+    
+    return board, start_point, goal_points
+
+def get_matrix_shape(mat):
+    return (len(mat), len(mat[0]))
+
+game = sokoban_games.game3
+board, start_point, goal_points = generate_board(game)
+print(np.matrix(board))
+print(start_point)
+print(goal_points)
+start_node = Node(start_point)
+problem3 = Problem(board, start_node, goal_points)
+astar_search(problem3)

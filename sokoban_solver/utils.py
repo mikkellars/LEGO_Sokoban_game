@@ -18,7 +18,6 @@ from itertools import chain, combinations
 # ______________________________________________________________________________
 # Functions on Sequences and Iterables
 
-
 def sequence(iterable):
     """Converts iterable to sequence, if it is not already one."""
     return (iterable if isinstance(iterable, collections.abc.Sequence)
