@@ -20,8 +20,9 @@ from utils import (
     memoize,
     PriorityQueue
 )
+from collections import deque
 import sokoban_games
-
+FIFOQueue = deque
 # ______________________________________________________________________________
 # Sokoban Game Solver
 
@@ -141,6 +142,25 @@ def best_first_graph_search(problem, f):
                     frontier.append(child)
     return None
 
+
+def breadth_first_graph_search(problem):
+    """ Breadth first graph search
+    """
+    node = Node(problem.initial)
+    if problem.goal_test(node.state):
+        return node
+    frontier = deque([node])
+    explored = set()
+    while frontier:
+        node = frontier.popleft()
+        explored.add(node.state)
+        for child in node.expand(problem):
+            if child.state not in explored and child not in frontier:
+                if problem.goal_test(child.state):
+                    return child
+                frontier.append(child)
+    return None
+
 def generate_board(string_board):
     lines = []
     [lines.append(line) for line in string_board.splitlines()]
@@ -167,10 +187,11 @@ def get_matrix_shape(mat):
     return (len(mat), len(mat[0]))
 
 game = sokoban_games.game3
+print(game)  
 board, start_point, goal_points = generate_board(game)
 print(np.matrix(board))
 print(start_point)
 print(goal_points)
 start_node = Node(start_point)
 problem3 = Problem(board, start_node, goal_points)
-astar_search(problem3)
+# astar_search(problem3)
