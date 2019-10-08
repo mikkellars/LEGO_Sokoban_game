@@ -29,10 +29,9 @@ FIFOQueue = deque
 class Problem(object):
     """The abstract class for a formal problem."""
 
-    def __init__(self, board, initial, goal=None):
+    def __init__(self, initial, goal=None):
         """Creates a problem class which specifies the initial state, and possibly
         a goal state, if there is a unique goal"""
-        self.board = board
         self.initial = initial
         self.goal = goal
 
@@ -165,10 +164,7 @@ def generate_board(string_board):
     lines = []
     [lines.append(line) for line in string_board.splitlines()]
 
-    w = 0
-    for line in lines:
-        if len(line) > w:
-            w = len(line)
+    w = max(len(line) for line in lines)
     h = len(lines)
     board = [[0 for x in range(w)] for y in range(h)]
 
@@ -187,11 +183,12 @@ def get_matrix_shape(mat):
     return (len(mat), len(mat[0]))
 
 game = sokoban_games.game3
-print(game)  
-board, start_point, goal_points = generate_board(game)
-print(np.matrix(board))
-print(start_point)
-print(goal_points)
-start_node = Node(start_point)
-problem3 = Problem(board, start_node, goal_points)
-# astar_search(problem3)
+solved_game = sokoban_games.goal_game3
+initial_board, _, _ = generate_board(game)
+solved_board, _, _ = generate_board(solved_game)
+print(np.matrix(initial_board))
+print(np.matrix(solved_board))
+start_node = Node(initial_board)
+goal_node = Node(solved_board)
+problem3 = Problem(start_node, goal_node)
+astar_search(problem3)
