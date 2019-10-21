@@ -1,6 +1,6 @@
 from array import array
 from collections import deque
-from sokoban_games import game1, game2, game3
+from sokoban_games import game1, game2, game3, game4
 
 data = []
 nrows = 0
@@ -14,24 +14,24 @@ def init(board):
     [data.append(line) for line in board.splitlines()]
     nrows = max(len(r) for r in data)
  
-    maps = {' ':' ', '.': '.', '@':' ', '#':'#', '$':' '}
-    mapd = {' ':' ', '.': ' ', '@':'@', '#':' ', '$':'*'}
+    maps = {'.':'.', 'G': 'G', 'M':'.', 'X':'X', 'J':'.'}
+    mapd = {'.':'.', 'G': '.', 'M':'M', 'X':'.', 'J':'*'}
  
     for r, row in enumerate(data):
         for c, ch in enumerate(row):
             sdata += maps[ch]
             ddata += mapd[ch]
-            if ch == '@':
+            if ch == 'M':
                 px = c
                 py = r
  
 def push(x, y, dx, dy, data):
-    if sdata[(y+2*dy) * nrows + x+2*dx] == '#' or data[(y+2*dy) * nrows + x+2*dx] != ' ':
+    if sdata[(y+2*dy) * nrows + x+2*dx] == 'X' or data[(y+2*dy) * nrows + x+2*dx] != '.':
         return None
  
     data2 = list(data)
-    data2[y * nrows + x] = ' '
-    data2[(y+dy) * nrows + x+dx] = '@'
+    data2[y * nrows + x] = '.'
+    data2[(y+dy) * nrows + x+dx] = 'M'
     data2[(y+2*dy) * nrows + x+2*dx] = '*'
     result = ""
     for char in data2:
@@ -40,7 +40,7 @@ def push(x, y, dx, dy, data):
  
 def is_solved(data):
     for i in range(len(data)):
-        if (sdata[i] == '.') != (data[i] == '*'):
+        if (sdata[i] == 'G') != (data[i] == '*'):
             return False
     return True
  
@@ -67,13 +67,13 @@ def solve():
                     visited.add(temp)
             else:
                 pos = (y+dy) * lnrows + x+dx
-                if sdata[pos] == '#' or temp[pos] != ' ':
+                if sdata[pos] == 'X' or temp[pos] != '.':
                         continue
  
                 data2 = list(temp)
                 past_pos = y * lnrows + x
-                data2[past_pos] = ' '
-                data2[pos] = '@'
+                data2[past_pos] = '.'
+                data2[pos] = 'M'
                 temp = ""
                 for char in data2:
                     temp += char
@@ -87,32 +87,8 @@ def solve():
  
     return "No solution"
 
-print("\nFirst game =>\n")
-init(game1)
-print(game1)
-seq = solve()
-print(seq)
-
-data = []
-nrows = 0
-px = py = 0
-sdata = ""
-ddata = ""
-
-print("\nSecond game =>\n")
-init(game2)
-print(game2)
-seq = solve()
-print(seq)
-
-data = []
-nrows = 0
-px = py = 0
-sdata = ""
-ddata = ""
-
-print("\nThird game =>\n")
-init(game3)
-print(game3)
+print('\nLast year competition =>\n')
+init(game4)
+print(game4)
 seq = solve()
 print(seq)

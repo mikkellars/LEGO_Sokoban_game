@@ -35,6 +35,22 @@ t2_cs_intersection = 0
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
+# def follow(suspend): # Svag over for lys
+#     if not suspend:
+#         speed_cs_r = i_cs_r.reflected_light_intensity / 2
+#         speed_cs_l = i_cs_l.reflected_light_intensity / 2 
+
+#         # Sharp corner add-on
+#         if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
+#             speed_cs_r = -20
+#         if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
+#             speed_cs_l = -20
+
+#         o_wheel_l.duty_cycle_sp = speed_cs_l
+#         o_wheel_r.duty_cycle_sp = speed_cs_r
+
+#         o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
+#         o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
 def follow(cargo):
     new_state = "follow"

@@ -1,194 +1,217 @@
 """ Module for solving  a sokoban puzzle
 
-    '#' is a wall
-    ' ' is a free space
-    '$' is a box
-    '.' is a goal place
+    'X' is a wall
+    '.' is a free space
+    'J' is start position of a box
+    'G' is a goal place
+    'M' it start position of the sokoban worker
+
+
     '*' is a box placed on a goal
-    '@' is for sokoban worker
     '+' is for sokoban worker on a goal
 
     "flrb" are the moves and uppercase, "FLRB" for pushes.
 """
 
-# ______________________________________________________________________________
-# imports
+""" IMPORTS """
+from sokoban_games import game4 
 import numpy as np
-import math
-from utils import (
-    is_in,
-    memoize,
-    PriorityQueue
-)
-from collections import deque
-import sokoban_games
-FIFOQueue = deque
-# ______________________________________________________________________________
-# Sokoban Game Solver
 
-class Problem(object):
-    """The abstract class for a formal problem."""
+""" Class for storing a state """
+class State:
+    """ constructs the class """
+    def __init__(self, player_position, box_positions=None, previous_state=None):
+        # previous state
+        self.previous_state = previous_state
+        
+        # list of box positions (row, col, idx)
+        self.box_positions = box_positions
+        self.player_position = player_position
 
-    def __init__(self, initial, goal=None):
-        """Creates a problem class which specifies the initial state, and possibly
-        a goal state, if there is a unique goal"""
-        self.initial = initial
-        self.goal = goal
+    """ returns previous state """
+    def get_previours_state(self):
+        return self.previous_state
 
-    def actions(self, state):
-        """Returns the actions which can be executed in the give state."""
-        raise NotImplementedError
-
-    def result(self, state, action):
-        """Returns the state when the action in the state has been executed. The
-        action must be one of self.actions(state)."""
-        raise NotImplementedError
-
-    def goal_test(self, state):
-        """Returns True if the state is a goal."""
-        if isinstance(self.goal, list):
-            return is_in(state, self.goal)
-        else:
-            return state == self.goal
-
-    def path_cost(self, c, state1, action, state2):
-        """Returns the cost of a solution path that arrives at state2 from state1 with
-        action, assuming cost c to get up to state1."""
-        return c + 1
-
-    def h(self, node):
-        yN, xN = node.state
-        yS, xS = self.initial.state
-        return math.hypot((xN - xS), (yN - yS))
+    """ returns the change box and its positions """
+    def get_box_positions(self):
+        return self.box_positions
     
-    def value(self, state):
-        """For optimization problems, each state has a value. Hill-climbing and
-        related algorithms try to maximize this value."""
-        raise NotImplementedError
+    """ returns player position """
+    def get_player_position(self):
+        return self.player_position
 
-class Node:
-    """ A node in a search tree contains a pointer to the parent and to the acutal 
-    state for this node. Includes the action that got us to this state and the total
-    path cost(g) to reach the node."""
+""" Class for solving a sokoban board """
+class SokobanSolver:
+    """ construct the class """
+    def __init__(self, board):
+        # store initial board
+        self.board = board
 
-    def __init__(self, state, parent=None, action=None, path_cost=0):
-        """Creates a search tree node, derived from a parent by an action."""
-        self.state = state
-        self.parent = parent
-        self.action = action
-        self.path_cost = path_cost
-        self.depth = 0
-        if parent is not None:
-            self.depth = parent.depth + 1
+        # generate board as data
+        self.__board2matrix__() # as matrix
+        #self.__board2strings__() # as list of strings
 
-    def __repr__(self):
-        return "<Node {}".format(self.state)
+        # get list of dead zones
+        self.__dead_zones__()
 
-    def __lt__(self, node):
-        return self.state < node.state
-
-    def expand(self, problem):
-        """List the nodes reachable in one step form this node."""
-        return [self.child_node(problem, action) for action in problem.actions(self.state)]
-
-    def child_node(self, problem, action):
-        """"""
-        next_state = problem.result(self.state, action)
-        next_node = Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
-        return next_node
-
-    def solution(self):
-        """Returns the sequence of actions to go from the root to this node."""
-        return [node.action for node in self.path()[1:]]
+    """ Prints the board in its inital state """
+    def print_board(self):
+        print("The current board =>\n")
+        print(self.board)
+        print("\n")
     
-    def path(self):
-        """Returns a list of nodes forming the path form the root to this node."""
-        node, path_back = self, []
-        while node:
-            path_back.append(node)
-            node.parent
-        return list(reversed(path_back))
+    """ Print dead zones """
 
-    def __eq__(self, other):
-        return isinstance(other, Node) and self.state == other.state
-
-    def __hash__(self):
-        return hash(self.state)
-
-def astar_search(problem, h=None):
-    """A* search is best-first graph search with f(n) = g(n) + h(n)."""
-    h = memoize(h or problem.h, 'h')
-    return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
-
-def best_first_graph_search(problem, f):
-    """Search the nodes with the lowest f scores first."""
-    f = memoize(f, 'f')
-    node = Node(problem.initial.state)
-    frontier = PriorityQueue('min', f)
-    frontier.append(node)
-    explored = set()
-    while frontier:
-        node = frontier.pop()
-        if problem.goal_test(node.state):
-            return node
-        explored.add(node.state)
-        for child in node.expand(problem):
-            if child.state not in explored and child not in frontier:
-                frontier.append(child)
-            elif child in frontier:
-                if f(child) < frontier[child]:
-                    del frontier[child]
-                    frontier.append(child)
-    return None
-
-
-def breadth_first_graph_search(problem):
-    """ Breadth first graph search
-    """
-    node = Node(problem.initial)
-    if problem.goal_test(node.state):
-        return node
-    frontier = deque([node])
-    explored = set()
-    while frontier:
-        node = frontier.popleft()
-        explored.add(node.state)
-        for child in node.expand(problem):
-            if child.state not in explored and child not in frontier:
-                if problem.goal_test(child.state):
-                    return child
-                frontier.append(child)
-    return None
-
-def generate_board(string_board):
-    lines = []
-    [lines.append(line) for line in string_board.splitlines()]
-
-    w = max(len(line) for line in lines)
-    h = len(lines)
-    board = [[0 for x in range(w)] for y in range(h)]
-
-    goal_points = []
-    for i, line in enumerate(lines):
-        for j, char in enumerate(line):
-            board[i][j] = char
-            if char == '@' or char == '+':
-                start_point = (i, j)
-            if char == '.' or char == '*':
-                goal_points.append((i, j))
     
-    return board, start_point, goal_points
+    """ Generates a matrix of the board"""
+    def __board2matrix__(self):
+        # get lines
+        lines = []
+        [lines.append(line) for line in self.board.splitlines()]
 
-def get_matrix_shape(mat):
-    return (len(mat), len(mat[0]))
+        # get width and height of the borad
+        cols = max(len(line) for line in lines)
+        rows = len(lines)
 
-game = sokoban_games.game3
-solved_game = sokoban_games.goal_game3
-initial_board, _, _ = generate_board(game)
-solved_board, _, _ = generate_board(solved_game)
-print(np.matrix(initial_board))
-print(np.matrix(solved_board))
-start_node = Node(initial_board)
-goal_node = Node(solved_board)
-problem3 = Problem(start_node, goal_node)
-astar_search(problem3)
+        # generate board with nothing
+        matrix = [[0 for x in range(cols)] for y in range(rows)]
+
+        # fill in board
+        goal_points = []
+        box_positions = []
+        idx = 0
+        for row, line in enumerate(lines):
+            for col, char in enumerate(line):
+                matrix[row][col] = char
+                if char == 'M':
+                    player_position = (row, col)
+                if char == 'G':
+                    goal_points.append((row, col))
+                if char == 'J':
+                    box_positions.append((row, col, idx))
+                    idx += 1
+
+        # create initial state
+        inital_state = State(player_position, box_positions)
+
+        # convert to numpy array
+        matrix = np.asarray(matrix)
+
+        # store generated data
+        self.state = inital_state
+        self.goal_points = goal_points
+        self.data = matrix
+        self.ncols = cols
+    
+    # """ Generate board as list of strings """
+    # def __board2strings__(self):
+    #     # store lines in data
+    #     lines = []
+    #     [lines.append(line) for line in self.board.splitlines()]
+
+    #     # get number of rows
+    #     cols = max(len(r) for r in lines)
+
+    #     # get start point and goal points
+    #     goal_points = []
+    #     box_positions = []
+    #     for i, row in enumerate(lines):
+    #         for j, char in enumerate(row):
+    #             if char == 'M':
+    #                 player_position = (i, j)
+    #             if char == 'G':
+    #                 goal_points.append((i, j))
+    #             if char == 'J':
+    #                 box_positions.append((i, j))
+
+    #     # create initial state
+    #     state = State(box_positions, player_position)
+        
+    #     # store generate data
+    #     self.inital_state = state
+    #     self.goal_points = goal_points
+    #     self.data = lines
+    #     self.nrows = cols
+
+    """ Checks for dead zones in the map, where the box cannot be push to,
+        and stores them """
+    def __dead_zones__(self):
+        self.dead_zones = self.__check_corners__()
+        
+    """ Finds unnessesary corners """
+    def __check_corners__(self):
+        # create corners
+        filter_up_left = np.array([['X','X'],['X','.']])
+        filter_up_right = np.array([['X','X'],['.','X']])
+        filter_down_left = np.array([['X','.'],['X','X']])
+        filter_down_right = np.array([['.','X'],['X','X']])
+
+        # get dead zones
+        dead_zones = []
+        for row in range(np.size(self.data, 0) - 1): # rows checking
+            for col in range(np.size(self.data, 1) - 1): 
+                if((self.data[row:row+2, col:col+2] == filter_down_left).all()):
+                    dead_zones.append((row, col+1))
+                elif((self.data[row:row+2, col:col+2] == filter_up_left).all()):
+                    dead_zones.append((row+1, col+1))
+                elif((self.data[row:row+2, col:col+2] == filter_down_right).all()):
+                    dead_zones.append((row, col))
+                elif((self.data[row:row+2, col:col+2] == filter_up_right).all()):
+                    dead_zones.append((row+1, col))
+
+        return dead_zones
+    
+    """ Return a new state based on the given action """
+    def action(self, action):
+        if action == "up":
+            # get player position
+            (row, col) = self.state.get_player_position()
+            
+            # get char at new position
+            pos = (row-1, col)
+            char = self.data[pos]
+
+            # check if char free space or goal
+            if char == '.' or char == 'G':
+                new_state = State(pos, box_positions=None, previous_state=self.state)
+                self.state = new_state
+            # check if char is a box
+            elif char == 'J':
+                # check if box can be moved
+                pos2 = (row-2, col)
+
+                # check if move is in dead zone
+                for dead_pos in self.dead_zones:
+                    if pos2 == dead_pos:
+                        return None
+                
+                # get char at new position
+                char2 = self.data[pos2]
+                
+                if char2 == '.' or char2 == 'G':
+                    idx = self.get_box_index(self.state, pos)
+                    pos2 = (pos2[0], pos2[1], idx)
+                    new_state = State(pos, box_positions=pos2, previous_state=self.state)
+                    self.state = new_state
+        elif action == "down":
+            pass
+        elif action == "right":
+            pass
+        elif action == "left":
+            pass
+
+        # no valid action avaliable
+        return None
+    
+    """ Returns the box index of box at the given position """
+    def get_box_index(self, state, pos):
+        positions = state.get_box_positions()
+        for (row, col, idx) in positions:
+            if row == pos(0) and col == pos(1):
+                return idx
+        
+        self.get_box_index(state.previous_state, pos)
+    
+""" main """
+solver = SokobanSolver(game4)
+solver.print_board()

@@ -24,3 +24,17 @@ game3 = """\
 #.$$  #
 #.#  @#
 #######"""
+
+game4= """\
+XXXXXXX
+XG....X
+X.....X
+XGXG.GX
+XXXX.XX
+X.J...X
+X.J...X
+X..XXXX
+X.J.JMX
+X.....X
+X...XXX
+XXXXX"""
