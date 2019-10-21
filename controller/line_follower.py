@@ -21,7 +21,7 @@ o_both_wheel = MoveTank(OUTPUT_A, OUTPUT_B)
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
-def follow(suspend): # Svag over for lys og kan ikke tage skarpe sving
+def follow(suspend): # Svag over for lys
     if not suspend:
         speed_cs_r = i_cs_r.reflected_light_intensity / 2
         speed_cs_l = i_cs_l.reflected_light_intensity / 2 
