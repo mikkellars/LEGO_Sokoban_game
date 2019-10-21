@@ -3,63 +3,35 @@
 ###############################################
 ##               LIBARY IMPORT               ##
 ###############################################
+from state_machine import (
+    state_machine, start, controller, forward,
+    back, left, right, turn
+)
 from controller import line_follower, play_music
-from timeit import default_timer as timer
-from ev3dev2.button import Button
-import time
+from sokoban_solver.solver import Problem
 
 ###############################################
-##                I/O DEFINING               ##
-###############################################
-
-###############################################
-##              GLOBAL VARIABLES             ##
-###############################################
-
-###############################################
-##                  TIMERS                   ##
-###############################################
-
-###############################################
-##                  MAIN FUNCTION            ##
+##              Main function                ##
 ###############################################
 def main():
-    btn = Button()
-    t1 = timer()
-    t2 = timer()
-    suspend = False
-    number = 0
 
-    while 1:
-        # Exit
-        if btn.any():
-            exit()
+    problem = Problem("START", "SOKOBAN GAME SOLVED")
+    
+    task_sequence = "SFFLR"
 
-        # Line follower
-        t2 = timer()
-        if line_follower.intersection() is True and (t2 - t1) > 1:
-            #number = number + 1
-            #print(number)
-            t1 = timer()
-            suspend = True     
-            
-        line_follower.follow(suspend)
-        
-        if suspend is True:
-            line_follower.stop()
-           # play_music.sound()
-
-            #line_follower.run_forward(1)
-            #line_follower.turn_left()
-            line_follower.turn_right()
-            
-            suspend = False
-
-        # Print
-        # count + 1
-        # if count % 1000000000 == 0:
-        #     line_follower.print_color_values()
-        #     count = 0
+    # STATE MACHINE
+    m = state_machine()
+    m.add_state("start", start)
+    m.add_state("controller", controller)
+    m.add_state("follow", line_follower.follow)
+    m.add_state("forward", forward)
+    m.add_state("left", left)
+    m.add_state("right", right)
+    m.add_state("turn", turn)
+    m.add_state("back", back)
+    m.add_state("End", None, end_state=1)
+    m.set_start("start")
+    m.run(task_sequence)
 
 if __name__ == "__main__":
     main()
