@@ -14,7 +14,7 @@
 """
 
 """ IMPORTS """
-from sokoban_games import game4 
+from sokoban_games import game1, game4 
 import numpy as np
 
 """ Class for storing a state """
@@ -60,9 +60,6 @@ class SokobanSolver:
         print(self.board)
         print("\n")
     
-    """ Print dead zones """
-
-    
     """ Generates a matrix of the board"""
     def __board2matrix__(self):
         # get lines
@@ -102,6 +99,7 @@ class SokobanSolver:
         self.goal_points = goal_points
         self.data = matrix
         self.ncols = cols
+        self.nboxes = len(box_positions)
     
     # """ Generate board as list of strings """
     # def __board2strings__(self):
@@ -161,57 +159,148 @@ class SokobanSolver:
 
         return dead_zones
     
-    """ Return a new state based on the given action """
+    """
+    Returns a new state based on the action and the current state
+        actions can be "up", "down", "right" and "left"
+    """
     def action(self, action):
+        # get player position
+        (row, col) = self.state.get_player_position()
+
+        # get next action position
         if action == "up":
-            # get player position
-            (row, col) = self.state.get_player_position()
+            pos = (row-1, col)
+            pos2 = (row-2, col)
+        elif action == "down":
+            pos = (row+1, col)
+            pos2 = (row+2, col)
+        elif action == "right":
+            pos = (row, col+1)
+            pos2 = (row, col+2)
+        elif action == "left":
+            pos = (row, col-1)
+            pos2 = (row, col-2)
+
+        # get char at new position
+        char = self.data[pos]
+
+        # check if char free space or goal
+        if char == '.' or char == 'G':
+            new_state = State(pos, box_positions=None, previous_state=self.state)
+            return new_state
+        # check if char is a box
+        elif char == 'J':
+            # check if move is in dead zone
+            for dead_pos in self.dead_zones:
+                if pos2 == dead_pos:
+                    return None
             
             # get char at new position
-            pos = (row-1, col)
-            char = self.data[pos]
-
-            # check if char free space or goal
-            if char == '.' or char == 'G':
-                new_state = State(pos, box_positions=None, previous_state=self.state)
-                self.state = new_state
-            # check if char is a box
-            elif char == 'J':
-                # check if box can be moved
-                pos2 = (row-2, col)
-
-                # check if move is in dead zone
-                for dead_pos in self.dead_zones:
-                    if pos2 == dead_pos:
-                        return None
-                
-                # get char at new position
-                char2 = self.data[pos2]
-                
-                if char2 == '.' or char2 == 'G':
-                    idx = self.get_box_index(self.state, pos)
-                    pos2 = (pos2[0], pos2[1], idx)
-                    new_state = State(pos, box_positions=pos2, previous_state=self.state)
-                    self.state = new_state
-        elif action == "down":
-            pass
-        elif action == "right":
-            pass
-        elif action == "left":
-            pass
+            char2 = self.data[pos2]
+            
+            if char2 == '.' or char2 == 'G':
+                idx = self.get_box_index(self.state, pos)
+                pos2 = (pos2[0], pos2[1], idx)
+                new_state = State(pos, box_positions=pos2, previous_state=self.state)
+                return new_state
 
         # no valid action avaliable
         return None
     
     """ Returns the box index of box at the given position """
     def get_box_index(self, state, pos):
+        # check if a box is at the given position
         positions = state.get_box_positions()
-        for (row, col, idx) in positions:
-            if row == pos(0) and col == pos(1):
-                return idx
+        if positions == None:
+            return self.get_box_index(state.previous_state, pos)
+        else:
+            if isinstance(positions, list):
+                for (row, col, idx) in positions:
+                    if row == pos[0] and col == pos[1]:
+                        return idx
+            else:
+                row, col, idx = positions
+                if row == pos[0] and col == pos[1]:
+                    return idx
         
-        self.get_box_index(state.previous_state, pos)
+        # stopping criteria
+        if self.state.previous_state == None:
+            return None
+
+        # check previous state
+        return self.get_box_index(state.previous_state, pos)
+
+
+    """ Find the position of the box with the given index """
+    def get_box_from_index(self, state, index):
+        boxes = state.get_box_positions()
+        if boxes == None:
+            return self.get_box_from_index(state.previous_state, index)
+        else:
+            if isinstance(boxes, list):
+                for row, col, idx in boxes:
+                    if index == idx:
+                        return row, col, idx
+            else:
+                row, col, idx = boxes
+                if index == idx:
+                    return row, col, idx
+        
+        if self.state.previous_state == None:
+            return None
+
+        return self.get_box_from_index(state.previous_state, index)
+
+    """ Checks if the sokoban game is solved """
+    def __is_solved__(self, state):
+        boxes = []
+        for i in range(self.nboxes):
+            row, col, idx = self.get_box_from_index(state, i)
+            boxes.append((row, col))
+        
+        goals = self.goal_points
+        for goal in goals:
+            for box in boxes:
+                if goal == box:
+                    boxes.remove(box)
+                    goals.remove(goal)
+
+        if len(goals) == 0 and len(boxes) == 0:
+            return True
+        
+        return False
+
+    """ Breadth first strategy """
+    def breadth_first_strategy(self):
+        # generate lists
+        open_list = [] # list with unexplored states
+        closed_list = [] # list with explored states (maybe not nessecary)
+        actions = ["up", "down", "right", "left"]
+
+        # start with initial state
+        open_list.append(self.state)
+        
+        # 
+        while (len(open_list) > 0):
+            # pop the first element in open list
+            state = open_list.pop()
+            closed_list.append(state)
+            self.state = state
+
+            # if head is a goal => succes
+            if self.__is_solved__(state) == True:
+                return "Found the solution to this puzzle"
+            else:
+                for action in actions:
+                    new_state = self.action(action)
+
+                    if new_state != None:
+                        open_list.append(new_state)
+
+        return "No solutions found"
+
     
 """ main """
-solver = SokobanSolver(game4)
+solver = SokobanSolver(game1)
 solver.print_board()
+print(solver.breadth_first_strategy())
