@@ -14,7 +14,7 @@
 """
 
 """ IMPORTS """
-from sokoban_games import game1, game4 
+from sokoban_games import game0, game1, game4 
 import numpy as np
 
 """ Class for storing a state """
@@ -27,18 +27,6 @@ class State:
         # list of box positions (row, col, idx)
         self.box_positions = box_positions
         self.player_position = player_position
-
-    """ returns previous state """
-    def get_previours_state(self):
-        return self.previous_state
-
-    """ returns the change box and its positions """
-    def get_box_positions(self):
-        return self.box_positions
-    
-    """ returns player position """
-    def get_player_position(self):
-        return self.player_position
 
 """ Class for solving a sokoban board """
 class SokobanSolver:
@@ -165,7 +153,7 @@ class SokobanSolver:
     """
     def action(self, action):
         # get player position
-        (row, col) = self.state.get_player_position()
+        row, col = self.state.player_position
 
         # get next action position
         if action == "up":
@@ -185,21 +173,21 @@ class SokobanSolver:
         char = self.data[pos]
 
         # check if char free space or goal
-        if char == '.' or char == 'G':
+        if char == '.' or char == 'G' or char == 'M':
             new_state = State(pos, box_positions=None, previous_state=self.state)
             return new_state
         # check if char is a box
         elif char == 'J':
             # check if move is in dead zone
-            for dead_pos in self.dead_zones:
-                if pos2 == dead_pos:
-                    return None
+            #for dead_pos in self.dead_zones:
+            #    if pos2 == dead_pos:
+            #        return None
             
             # get char at new position
             char2 = self.data[pos2]
             
-            if char2 == '.' or char2 == 'G':
-                idx = self.get_box_index(self.state, pos)
+            if char2 == '.' or char2 == 'G' or char == 'M':
+                idx = self.get_box_from_position(self.state, pos)
                 pos2 = (pos2[0], pos2[1], idx)
                 new_state = State(pos, box_positions=pos2, previous_state=self.state)
                 return new_state
@@ -208,48 +196,79 @@ class SokobanSolver:
         return None
     
     """ Returns the box index of box at the given position """
-    def get_box_index(self, state, pos):
-        # check if a box is at the given position
-        positions = state.get_box_positions()
-        if positions == None:
-            return self.get_box_index(state.previous_state, pos)
-        else:
-            if isinstance(positions, list):
-                for (row, col, idx) in positions:
+    def get_box_from_position(self, state, pos):        
+        # # stopping criteria
+        # if state == None:
+        #     return None
+
+        # # check if a box is at the given position
+        # positions = state.box_positions
+        # if positions == None:
+        #     return self.get_box_from_position(state.previous_state, pos)
+        # else:
+        #     if isinstance(positions, list):
+        #         for (row, col, idx) in positions:
+        #             if row == pos[0] and col == pos[1]:
+        #                 return idx
+        #     else:
+        #         row, col, idx = positions
+        #         if row == pos[0] and col == pos[1]:
+        #             return idx
+
+        # # check previous state
+        # return self.get_box_from_position(state.previous_state, pos)
+
+        state = self.state
+        while (state != None):
+            positions = state.box_positions
+            if positions != None:
+                if isinstance(positions, list):
+                    for (row, col, idx) in positions:
+                        if row == pos[0] and col == pos[1]:
+                            return idx
+                else:
+                    row, col, idx = positions
                     if row == pos[0] and col == pos[1]:
                         return idx
-            else:
-                row, col, idx = positions
-                if row == pos[0] and col == pos[1]:
-                    return idx
-        
-        # stopping criteria
-        if self.state.previous_state == None:
-            return None
-
-        # check previous state
-        return self.get_box_index(state.previous_state, pos)
+            state = state.previous_state
+        return None
 
 
     """ Find the position of the box with the given index """
     def get_box_from_index(self, state, index):
-        boxes = state.get_box_positions()
-        if boxes == None:
-            return self.get_box_from_index(state.previous_state, index)
-        else:
-            if isinstance(boxes, list):
-                for row, col, idx in boxes:
+        # # stopping criteria        
+        # if state == None:
+        #     return None
+
+        # boxes = state.box_positions
+        # if boxes == None:
+        #     return self.get_box_from_index(state.previous_state, index)
+        # else:
+        #     if isinstance(boxes, list):
+        #         for row, col, idx in boxes:
+        #             if index == idx:
+        #                 return row, col, idx
+        #     else:
+        #         row, col, idx = boxes
+        #         if index == idx:
+        #             return row, col, idx
+
+        # return self.get_box_from_index(state.previous_state, index)
+
+        state = self.state
+        while (state != None):
+            boxes = state.box_positions
+            if boxes != None:
+                if isinstance(boxes, list):
+                    for row, col, idx in boxes:
+                        if index == idx:
+                            return row, col, idx
+                else:
+                    row, col, idx = boxes
                     if index == idx:
                         return row, col, idx
-            else:
-                row, col, idx = boxes
-                if index == idx:
-                    return row, col, idx
-        
-        if self.state.previous_state == None:
-            return None
-
-        return self.get_box_from_index(state.previous_state, index)
+            state = state.previous_state
+        return None
 
     """ Checks if the sokoban game is solved """
     def __is_solved__(self, state):
@@ -270,6 +289,60 @@ class SokobanSolver:
         
         return False
 
+    """  """
+    def update_map(self):
+        boxes = []
+        for i in range(self.nboxes):
+            row, col, idx = self.get_box_from_index(self.state, i)
+            boxes.append((row, col))
+
+        # remove old boxes
+        self.data = np.where(self.data == 'J', '.', self.data)
+
+        # set new boxes
+        if isinstance(boxes, list):
+            for box in boxes:
+                row, col = box
+                self.data[row, col] = 'J'
+        else:
+            row, col, idx = boxes
+            self.data[row, col] = 'J'
+        
+        # remove old player
+        self.data = np.where(self.data == 'M', '.', self.data)
+
+        # set new player
+        row, col = self.state.player_position
+        if self.data[row, col] != 'G':
+            self.data[row, col] = 'M'
+
+        # insert remove goals
+        for goal in self.goal_points:
+            row, col = goal
+            if self.data[row, col] == '.':
+                self.data[row, col] = 'G'
+
+    """"""
+    def create_solution_seq(self):
+        seq = ""
+        state = self.state
+        while (state.previous_state != None):
+            # get positions
+            current_pos = state.player_position
+            previous_pos = state.previous_state.player_position
+
+            # get action
+            if (current_pos[0] < previous_pos[0]):
+                seq += 'u'
+            elif(current_pos[0] > previous_pos[0]):
+                seq += 'd'
+            elif(current_pos[1] < previous_pos[1]):
+                seq += 'l'
+            elif(current_pos[1] > previous_pos[1]):
+                seq += 'r'
+            state = state.previous_state 
+        return seq[::-1]
+
     """ Breadth first strategy """
     def breadth_first_strategy(self):
         # generate lists
@@ -283,14 +356,19 @@ class SokobanSolver:
         # 
         while (len(open_list) > 0):
             # pop the first element in open list
-            state = open_list.pop()
+            state = open_list.pop(0)
             closed_list.append(state)
             self.state = state
 
             # if head is a goal => succes
             if self.__is_solved__(state) == True:
+                seq = self.create_solution_seq()
+                print("sequence: ", seq)
                 return "Found the solution to this puzzle"
             else:
+                # Update boxes locations on the map
+                self.update_map()
+                
                 for action in actions:
                     new_state = self.action(action)
 
@@ -303,4 +381,6 @@ class SokobanSolver:
 """ main """
 solver = SokobanSolver(game1)
 solver.print_board()
+print(solver.goal_points)
+print(solver.nboxes)
 print(solver.breadth_first_strategy())

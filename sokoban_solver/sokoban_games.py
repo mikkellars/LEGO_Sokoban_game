@@ -1,3 +1,10 @@
+game0 = """\
+XXXXXX
+XGJ..X
+X....X
+XM...X
+XXXXXX"""
+
 game1 = """\
 XXXXXX
 XMGXXX
