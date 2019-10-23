@@ -14,13 +14,13 @@
 """
 
 """ IMPORTS """
+import sys
 import sokoban_games 
 import numpy as np
 import time
 
 class State:
     """ Class for storing a state """
-    
     def __init__(self, player_position, box_positions=None, previous_state=None):
         """ constructs the class """
         # previous state
@@ -32,10 +32,8 @@ class State:
 
 class SokobanSolver:
     """ Class for solving a sokoban board """
-    
     def __init__(self, board):
         """ construct the class """
-        
         # store initial board
         self.board = board
 
@@ -48,13 +46,11 @@ class SokobanSolver:
 
     def print_board(self):
         """ Prints the board in its inital state """
-        
         print("The current board:")
         print(self.board)
     
     def __board2matrix__(self):
         """ Generates a matrix of the board"""
-        
         # get lines
         lines = []
         [lines.append(line) for line in self.board.splitlines()]
@@ -126,29 +122,31 @@ class SokobanSolver:
 
     def __dead_zones__(self):
         """ Checks for dead zones in the map, where the box cannot be push to and stores them """
-
         self.dead_zones = self.__check_corners__()
         
     def __check_corners__(self):
         """ Finds unnessesary corners """
-        
         # create corners
         filter_up_left = np.array([['X','X'],['X','.']])
+        filter_up_left_man = np.array([['X','X'],['X','M']])
         filter_up_right = np.array([['X','X'],['.','X']])
+        filter_up_right_man = np.array([['X','X'],['M','X']])
         filter_down_left = np.array([['X','.'],['X','X']])
+        filter_down_left_man = np.array([['X','M'],['X','X']])
         filter_down_right = np.array([['.','X'],['X','X']])
+        filter_down_right_man = np.array([['M','X'],['X','X']])
 
         # get dead zones
         dead_zones = []
         for row in range(np.size(self.data, 0) - 1): # rows checking
             for col in range(np.size(self.data, 1) - 1): 
-                if((self.data[row:row+2, col:col+2] == filter_down_left).all()):
+                if ((self.data[row:row+2, col:col+2] == filter_down_left).all()) or ((self.data[row:row+2, col:col+2] == filter_down_left_man).all()):
                     dead_zones.append((row, col+1))
-                elif((self.data[row:row+2, col:col+2] == filter_up_left).all()):
+                elif ((self.data[row:row+2, col:col+2] == filter_up_left).all()) or ((self.data[row:row+2, col:col+2] == filter_up_left_man).all()):
                     dead_zones.append((row+1, col+1))
-                elif((self.data[row:row+2, col:col+2] == filter_down_right).all()):
+                elif ((self.data[row:row+2, col:col+2] == filter_down_right).all()) or ((self.data[row:row+2, col:col+2] == filter_down_right_man).all()):
                     dead_zones.append((row, col))
-                elif((self.data[row:row+2, col:col+2] == filter_up_right).all()):
+                elif ((self.data[row:row+2, col:col+2] == filter_up_right).all()) or ((self.data[row:row+2, col:col+2] == filter_up_right_man).all()):
                     dead_zones.append((row+1, col))
 
         return dead_zones
@@ -158,7 +156,6 @@ class SokobanSolver:
         Returns a new state based on the action and the current state
             actions can be "up", "down", "right" and "left"
         """
-        
         # get player position
         row, col = self.state.player_position
 
@@ -185,10 +182,10 @@ class SokobanSolver:
             return new_state
         # check if char is a box
         elif char == 'J':
-            # # check if move is in dead zone
-            # for dead_pos in self.dead_zones:
-            #    if pos2 == dead_pos:
-            #        return None
+            # check if move is in dead zone
+            for dead_pos in self.dead_zones:
+               if pos2 == dead_pos:
+                   return None
 
             # check if box can be pushed
             char2 = self.data[pos2]
@@ -220,9 +217,8 @@ class SokobanSolver:
         return None
 
 
-    def get_box_from_index(self, state, index):
+    def get_box_from_index(self, index):
         """ Find the position of the box with the given index """
-
         state = self.state
         while (state != None):
             boxes = state.box_positions
@@ -240,7 +236,6 @@ class SokobanSolver:
 
     def __is_solved__(self, state):
         """ Checks if the sokoban game is solved """
-        
         goals = self.goal_points
         for goal in goals:
             row, col = goal
@@ -250,10 +245,9 @@ class SokobanSolver:
 
     def update_map(self):
         """  """
-
         boxes = []
         for i in range(self.nboxes):
-            position = self.get_box_from_index(self.state, i)
+            position = self.get_box_from_index(i)
             if position != None:
                 row, col, idx = position
                 boxes.append((row, col))
@@ -286,7 +280,6 @@ class SokobanSolver:
 
     def create_solution_seq(self):
         """ Creates the solution sequence by looking at previous player position until initial state is reached"""
-        
         seq = ""
         state = self.state
 
@@ -312,9 +305,23 @@ class SokobanSolver:
         # flip sequence and return it
         return seq[::-1]
 
+    def get_state_info(self, state):
+        """"""
+        result = []
+        row, col = state.player_position
+        result.append(row)
+        result.append(col)
+        for i in range(self.nboxes):
+            row, col, idx = self.get_box_from_index(i)
+            result.append(row)
+            result.append(col)
+            result.append(idx)
+        return tuple(result)
+
     def breadth_first_strategy(self):
-        """ Breadth first strategy """
-        
+        """Breadth first strategy
+            Search the shallowest nodes in the search tree first.
+            Search through tge successors of a problem to find a goal."""
         print("\nRunning breadth first search algorithm..\n")
 
         # generate lists
@@ -326,39 +333,41 @@ class SokobanSolver:
         open_set.append(self.state)
         
         # 
-        # i = 0
+        i = 0
         while (len(open_set) > 0):
             # pop the first element in open list
             state = open_set.pop(0)
-            closed_set.add(state)
             self.state = state
+
+            # store the box positions and player position and add to closed list
+            state_info = self.get_state_info(state)
+            closed_set.add(state_info)
 
             # Update boxes locations on the map
             self.update_map()
 
             # if head is a goal => succes
             if self.__is_solved__(state) == True:
-                seq = self.create_solution_seq()
-                print("sequence: ", seq)
-                return "Found the solution to this puzzle"
+                print("States visited: ", len(closed_set))
+                return self.create_solution_seq()
             
             # keep searching
             for action in actions:
                 new_state = self.action(action)
-                if new_state != None and new_state not in closed_set:
-                    open_set.append(new_state)
+                if new_state != None:
+                    new_state_info = self.get_state_info(new_state)
+                    if new_state_info not in closed_set:
+                        open_set.append(new_state)
             
-            # if i % 10000 == 0:
-            #     print(self.data)
-            #     i = 0
-
-            # i += 1
+            if i % 100000 == 0:
+                print("States visited: ", len(closed_set))
+                i = 0
+            i += 1
 
         return "No solutions found"
 
     def depth_first_strategy(self):
         """ Depth first strategy """
-        
         print("\nRunning depth first search algorithm..\n")
 
         # generate lists
@@ -370,7 +379,6 @@ class SokobanSolver:
         open_list.append(self.state)
         
         #
-        # i = 0
         while (len(open_list) > 0):
             # pop the first element in open list
             state = open_list.pop(0)
@@ -389,28 +397,25 @@ class SokobanSolver:
                 new_state = self.action(action)
                 if new_state != None and new_state not in closed_set:
                     open_list.insert(0, new_state)
-            
-            # if i % 10000 == 0:
-            #     print(self.data)
-            #     i = 0
-
-            # i += 1
 
         return "No solutions found"
     
     def a_star(self):
         """ a star search algorithm """
+        print("Not implemented")
+        return 0
 
     
 """ main """
-solver = SokobanSolver(sokoban_games.game5)
-solver.print_board()
+print("\nProgram started\n")
+solver = SokobanSolver(sokoban_games.game4)
+print("The initial board:")
+print(solver.board)
 print("Goal positions: ", solver.goal_points)
 print("Box positions: ", solver.state.box_positions)
-
 t1 = time.time()
 seq = solver.breadth_first_strategy()
 t2 = time.time()
-
 print("Solution: ", seq)
 print("Time: ", t2 - t1, " [s]")
+print("\nProgram ended\n")

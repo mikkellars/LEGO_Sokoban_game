@@ -1,3 +1,5 @@
+import sys
+import time
 from array import array
 from collections import deque
 from sokoban_games import game1, game2, game3, game4
@@ -62,6 +64,7 @@ def solve():
                 temp = push(x, y, dx, dy, temp)
                 if temp and temp not in visited:
                     if is_solved(temp):
+                        print("States visited: ", len(visited))
                         return csol + di[3]
                     open.append((temp, csol + di[3], x+dx, y+dy))
                     visited.add(temp)
@@ -81,6 +84,7 @@ def solve():
                 if temp not in visited:
                     if is_solved(temp):
                         seq = csol + di[2]
+                        print("States visited: ", len(visited))
                         return seq
                     open.append((temp, csol + di[2], x+dx, y+dy))
                     visited.add(temp)
@@ -90,5 +94,8 @@ def solve():
 print('\nLast year competition =>\n')
 init(game4)
 print(game4)
+t1 = time.time()
 seq = solve()
-print(seq)
+t2 = time.time()
+print("Time: ", t2-t1, " [s]")
+print("Solution: ", seq)

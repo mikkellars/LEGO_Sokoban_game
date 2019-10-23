@@ -15,9 +15,9 @@ XXXXXX"""
 
 game2= """\
 XXXXXXX
-XG....X
-X.....X
-X.X...X
+XG..J.X
+XGJ...X
+XGX...X
 XXXXJXX
 X...M.X
 XXXXXXX"""
@@ -26,12 +26,12 @@ game3= """\
 XXXXXXX
 XG....X
 X.....X
-X.X...X
-XXXXJXX
-X.....X
-X.....X
+XGXG..X
+XXXX.XX
+X.J...X
+X.J...X
 X..XXXX
-X....MX
+X.J..MX
 X.....X
 X...XXX
 XXXXXXX"""
@@ -66,7 +66,7 @@ X.....X
 X.....X
 XG.X..X
 XG.JJ.X
-XGJJ..X
+XGJ...X
 X.X..MX
 XXXXXXX
 """
