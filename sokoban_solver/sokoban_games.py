@@ -13,24 +13,28 @@ X....X
 X....X
 XXXXXX"""
 
-game2 = """\
-######
-#.####
-#$ ###
-#.@ ##
-# $  #
-#    #
-######"""
+game2= """\
+XXXXXXX
+XG....X
+X.....X
+X.X...X
+XXXXJXX
+X...M.X
+XXXXXXX"""
 
-game3 = """\
-#######
-#     #
-#     #
-#. #  #
-#. $$ #
-#.$$  #
-#.#  @#
-#######"""
+game3= """\
+XXXXXXX
+XG....X
+X.....X
+X.X...X
+XXXXJXX
+X.....X
+X.....X
+X..XXXX
+X....MX
+X.....X
+X...XXX
+XXXXXXX"""
 
 game4= """\
 XXXXXXX
@@ -44,4 +48,25 @@ X..XXXX
 X.J.JMX
 X.....X
 X...XXX
-XXXXX"""
+XXXXXXX"""
+
+game5 = """\
+XXXXXX
+XGXXXX
+XJ.XXX
+XGM.XX
+X.J..X
+X....X
+XXXXXX
+"""
+
+game6 = """\
+XXXXXXX
+X.....X
+X.....X
+XG.X..X
+XG.JJ.X
+XGJJ..X
+X.X..MX
+XXXXXXX
+"""
