@@ -49,8 +49,7 @@ def is_solved(data):
 def solve():
     open = deque([(ddata, "", px, py)])
     visited = set([ddata])
-    dirs = ((0, -1, 'u', 'U'), ( 1, 0, 'r', 'R'),
-            (0,  1, 'd', 'D'), (-1, 0, 'l', 'L'))
+    dirs = ((0, -1, 'u', 'U'), ( 1, 0, 'r', 'R'), (0,  1, 'd', 'D'), (-1, 0, 'l', 'L'))
  
     lnrows = nrows
     while open:
@@ -92,8 +91,8 @@ def solve():
     return "No solution"
 
 print('\nLast year competition =>\n')
-init(game4)
-print(game4)
+init(game3)
+print(game3)
 t1 = time.time()
 seq = solve()
 t2 = time.time()
