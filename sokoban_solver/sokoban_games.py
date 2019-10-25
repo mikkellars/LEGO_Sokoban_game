@@ -75,3 +75,17 @@ XGJ...X
 X.X..MX
 XXXXXXX
 """
+
+game7= """\
+XXXXXXX
+XG....X
+XG....X
+XGXG.GX
+XXXXJXX
+X.J...X
+X.J...X
+X..XXXX
+X.J.JMX
+X.....X
+X...XXX
+XXXXXXX"""

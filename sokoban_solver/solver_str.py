@@ -105,7 +105,7 @@ class Solver:
                         visited.add(data)          
 
 """ main """
-solver = Solver(sokoban_games.game4)
+solver = Solver(sokoban_games.game7)
 print("Board:")
 print(solver.board)
 print("Number of rows:", solver.nrows)
