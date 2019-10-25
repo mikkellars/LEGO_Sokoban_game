@@ -4,7 +4,6 @@
 import sys
 import time
 from collections import deque
-from copy import deepcopy, copy
 import sokoban_games
 
 # GLOBALS
@@ -20,7 +19,7 @@ class Solver:
         global player_map, goal_map, px, py
         self.board = board
         # collect important data
-        data = []
+        data = list()
         [data.append(line) for line in board.splitlines()]
         self.nrows = max(len(row) for row in data)
         # generate maps
@@ -59,14 +58,17 @@ class Solver:
         return True
 
     def breadth_first_search(self):
-        """Solves the puzzle"""
+        """Breadth first strategy
+            Search the shallowest nodes in the search tree first.
+            Search through tge successors of a problem to find a goal."""
+        print("\nRunning breadth first search...\n")
         open = deque([(player_map, "", px, py)])
         visited = set([player_map])
         actions = (
-            (0, -1, 'u', 'U'),  # up
-            (1, 0, 'r', 'R'),   # right
-            (0, 1, 'd', 'D'),   # down
-            (-1, 0, 'l', 'L')   # left
+            (0,     -1, 'u',    'U'),   # up
+            (1,     0,  'r',    'R'),   # right
+            (0,     1,  'd',    'D'),   # down
+            (-1,    0,  'l',    'L')    # left
         )
         while open:
             current_map, seq, x, y = open.popleft()
@@ -97,7 +99,7 @@ class Solver:
                     for char in new_data:
                         data += char
                     # check if temp has been visited before
-                    if data and data not in visited:
+                    if data and str(data) not in visited:
                         if self.is_solved(data):
                             print("States visited: ", len(visited))
                             return seq + action[2]
@@ -105,31 +107,16 @@ class Solver:
                         visited.add(data)          
 
 """ main """
-solver = Solver(sokoban_games.game7)
+print("\n Program started\n")
+
+solver = Solver(sokoban_games.game2)
 print("Board:")
 print(solver.board)
 print("Number of rows:", solver.nrows)
-
-# # print goal map
-# print("Goal map:")
-# txt = ""
-# for i, char in enumerate(goal_map):
-#     txt += char
-#     if (i+1) % solver.nrows == 0:
-#         print(txt)
-#         txt = ""
-
-# # print player map
-# print("Player map:")
-# txt = ""
-# for i, char in enumerate(player_map):
-#     txt += char
-#     if (i+1) % solver.nrows == 0:
-#         print(txt)
-#         txt = ""
-
 t1 = time.time()
 solution = solver.breadth_first_search()
 t2 = time.time()
 print("Solutions sequence:", solution)
 print("Time to generate solution:", t2-t1, "seconds")
+
+print("\n Program ended\n")
