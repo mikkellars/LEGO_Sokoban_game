@@ -16,11 +16,11 @@ XXXXXX"""
 game2= """\
 XXXXXXX
 XG....X
-XG....X
-XGX...X
+X.....X
+X.X...X
 XXXX.XX
 X.J...X
-X.J...X
+X.....X
 X..XXXX
 X....MX
 X.....X

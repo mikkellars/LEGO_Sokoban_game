@@ -22,14 +22,14 @@ from collections import deque
 
 class State:
     """ Class for storing a state """
-    def __init__(self, player_position, box_positions=None, previous_state=None):
+    def __init__(self, player_position, action=None, box_positions=None, previous_state=None):
         """ constructs the class """
         # previous state
         self.previous_state = previous_state
-        
         # list of box positions (row, col, idx)
         self.box_positions = box_positions
         self.player_position = player_position
+        self.action = action
 
 class SokobanSolver:
     """ Class for solving a sokoban board """
