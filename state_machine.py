@@ -56,7 +56,8 @@ class state_machine:
 def start(cargo):
     # play_music.sound()
     time.sleep(1)
-    return ("controller", cargo)
+    new_state = "follow"
+    return (new_state, cargo)
 
 def controller(cargo):
     new_state = ""
@@ -67,8 +68,6 @@ def controller(cargo):
     if task == 'u':
         new_state = "forward"
         txt = "Going forward"
-    elif task = 'U':
-         
     elif task == 'l':
         new_state = "left"
         txt = "Turning left"
