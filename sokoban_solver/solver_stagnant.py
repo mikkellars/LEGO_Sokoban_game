@@ -18,10 +18,12 @@ import sys
 import sokoban_games 
 import numpy as np
 import time
+from collections import deque # list-like container with fast appends and pops on either end
+import copy
 
 class State:
     """ Class for storing a state """
-    def __init__(self, player_position, box_positions=None, previous_state=None):
+    def __init__(self, player_position, box_positions=None, previous_state=None, action=None):
         """ constructs the class """
         # previous state
         self.previous_state = previous_state
@@ -29,6 +31,19 @@ class State:
         # list of box positions (row, col, idx)
         self.box_positions = box_positions
         self.player_position = player_position
+        self.action = action
+
+    def get_previous_state(self):
+        return copy.deepcopy(self.previous_state)
+
+    def get_box_position(self):
+        return copy.deepcopy(self.box_positions)
+
+    def get_player_position(self):
+        return copy.deepcopy(self.player_position)
+    
+    def get_action(self):
+        return copy.deepcopy(self.action)
 
 class SokobanSolver:
     """ Class for solving a sokoban board """
@@ -151,132 +166,142 @@ class SokobanSolver:
 
         return dead_zones
     
-    def action(self, action):
+    def action(self, action, state, map):
         """
         Returns a new state based on the action and the current state
             actions can be "up", "down", "right" and "left"
         """
         # get player position
-        row, col = self.state.player_position
+        row, col = state.player_position
 
         # get next action position
-        if action == "up":
+        if action == "u":
             pos = (row-1, col)
             pos2 = (row-2, col)
-        elif action == "down":
+        elif action == "d":
             pos = (row+1, col)
             pos2 = (row+2, col)
-        elif action == "right":
+        elif action == "r":
             pos = (row, col+1)
             pos2 = (row, col+2)
-        elif action == "left":
+        elif action == "l":
             pos = (row, col-1)
             pos2 = (row, col-2)
 
         # get char at new position
-        char = self.data[pos]
+        char = map[pos]
 
         # check if char free space or goal
         if char == '.' or char == 'G' or char == 'M':
-            new_state = State(pos, box_positions=self.state.box_positions, previous_state=self.state)
+            new_state = State(pos, box_positions=state.get_box_position(), previous_state=state, action=action)
             return new_state
         # check if char is a box
         elif char == 'J':
             # check if move is in dead zone
-            # for dead_pos in self.dead_zones:
-            #    if pos2 == dead_pos:
-            #        return None
+            for dead_pos in self.dead_zones:
+               if pos2 == dead_pos:
+                   return None
 
             # check if box can be pushed
-            char2 = self.data[pos2]
+            char2 = map[pos2]
             if char2 == '.' or char2 == 'G':
-                idx = self.get_box_from_position(pos)
+                idx = self.get_box_from_position(state, pos)
                 pos2 = (pos2[0], pos2[1], idx)
                 # Update the box that is moved
-                boxes = self.state.box_positions
+                boxes = state.get_box_position()
                 boxes[idx] = pos2
-                new_state = State(pos, box_positions=boxes, previous_state=self.state)
+                new_state = State(pos, box_positions=boxes, previous_state=state, action=action)
                 return new_state
 
         # no valid action avaliable
         return None
 
-    def get_box_from_position(self, pos):
+    def get_box_from_position(self, state, pos):
         """ Returns the box index of box at the given position """
-        boxes = self.state.box_positions
+        boxes = state.get_box_position()
         for (row, col, idx) in boxes:
             if row == pos[0] and col == pos[1]:
                 return idx
 
-    def __is_solved__(self, state):
+    def __is_solved__(self, state, map):
         """ Checks if the sokoban game is solved """
         goals = self.goal_points
         for goal in goals:
             row, col = goal
-            if self.data[row, col] != 'J':
+            if map[row, col] != 'J':
                 return False
         return True
 
-    def update_map(self):
+    def update_map(self, state, map):
         """  """
-        # remove old boxes
-        self.data = np.where(self.data == 'J', '.', self.data)
+        boxes = state.get_box_position()
+        player = state.get_player_position()
 
-        # set new boxes
-        boxes = self.state.box_positions
-        for box in boxes:
-            row, col, __ = box
-            self.data[row, col] = 'J'
-
-        
-        # remove old player
-        self.data = np.where(self.data == 'M', '.', self.data)
+        # remove old boxes and player
+        map = np.where(map == 'J', '.', map)
+        map = np.where(map == 'M', '.', map)
 
         # set new player
-        row, col = self.state.player_position
-        if self.data[row, col] != 'G':
-            self.data[row, col] = 'M'
-
-        # insert remove goals
         for goal in self.goal_points:
-            row, col = goal
-            if self.data[row, col] == '.':
-                self.data[row, col] = 'G'
+            if goal != player:
+                map[player] = 'M'
+        
+        # insert boxes
+        for box in boxes:
+            map[box[0], box[1]] = 'J'
 
-    def create_solution_seq(self):
+        # insert goals
+        for goal in self.goal_points:
+            if map[goal] != 'J':
+                map[goal] = 'G'
+
+        return map
+
+    def create_solution_seq(self, state):
         """ Creates the solution sequence by looking at previous player position until initial state is reached"""
         seq = ""
-        state = self.state
-
-        # iterate back to initial state
-        while (state.previous_state != None):
+        while (state.get_previous_state() != None):
             # get positions
-            current_pos = state.player_position
-            previous_pos = state.previous_state.player_position
+            seq += state.get_action()
+            state = state.get_previous_state()
 
-            # get action
-            if (current_pos[0] < previous_pos[0]):
-                seq += 'u'
-            elif(current_pos[0] > previous_pos[0]):
-                seq += 'd'
-            elif(current_pos[1] < previous_pos[1]):
-                seq += 'l'
-            elif(current_pos[1] > previous_pos[1]):
-                seq += 'r'
-            
-            # move on to previous state
-            state = state.previous_state
-        
         # flip sequence and return it
         return seq[::-1]
+
+        # seq = ""
+        # state = self.state
+
+        # # iterate back to initial state
+        # while (state.previous_state != None):
+        #     # get positions
+        #     current_pos = state.get_player_position()
+        #     previous_pos = state.get_previous_state().get_player_position()
+
+        #     # get action
+        #     if (current_pos[0] < previous_pos[0]):
+        #         seq += 'u'
+        #     elif(current_pos[0] > previous_pos[0]):
+        #         seq += 'd'
+        #     elif(current_pos[1] < previous_pos[1]):
+        #         seq += 'l'
+        #     elif(current_pos[1] > previous_pos[1]):
+        #         seq += 'r'
+            
+        #     # move on to previous state
+        #     state = state.get_previous_state()
+        
+        # # flip sequence and return it
+        # return seq[::-1]
 
     def get_state_info(self, state):
         """"""
         result = []
-        row, col = state.player_position
+        action = state.get_action()
+        result.append(action)
+        row, col = state.get_player_position()
         result.append(row)
         result.append(col)
-        boxes = state.box_positions
+        boxes = state.get_box_position()
         for box in boxes:
             row, col, idx = box
             result.append(row)
@@ -291,81 +316,93 @@ class SokobanSolver:
         print("\nRunning breadth first search algorithm..\n")
 
         # generate lists
-        open_set = [] # set(unordered hashtable) with unexplored states
+        open_queue = deque()
         closed_set = set() # set with explored states (maybe not nessecary)
-        actions = ["up", "down", "right", "left"]
+        actions = ["u", "d", "r", "l"]
 
         # start with initial state
-        open_set.append(self.state)
-        
+        current_map = self.data
+        open_queue.append(self.state)
         # 
         i = 0
-        while (len(open_set) > 0):
+        while open_queue:
             # pop the first element in open list
-            self.state = open_set.pop(0)
+            current_state = open_queue.popleft()
 
             # store the box positions and player position and add to closed list
-            state_info = self.get_state_info(self.state)
+            state_info = self.get_state_info(current_state)
             closed_set.add(state_info)
-
+            
             # Update boxes locations on the map
-            self.update_map()
-
+            current_map = self.update_map(current_state, current_map)
+            
             # if head is a goal => succes
-            if self.__is_solved__(self.state) == True:
+            if self.__is_solved__(current_state, current_map) == True:
                 print("States visited: ", len(closed_set))
-                return self.create_solution_seq()
+                return self.create_solution_seq(current_state)
             
             # keep searching
             for action in actions:
-                new_state = self.action(action)
+                new_state = self.action(action, current_state, current_map)
                 if new_state != None:
                     new_state_info = self.get_state_info(new_state)
                     if new_state_info not in closed_set:
-                        open_set.append(new_state)
+                        open_queue.append(new_state)
             
-            if i % 1 == 0:
+            if i % 100000 == 0:
                
                 print("States visited: ", len(closed_set))
-                print(self.data)
-                #i = 0
+                #print(current_state.get_action())
+                print(current_map)
+                i = 0
             i += 1
 
         return "No solutions found"
 
-    def depth_first_strategy(self):
-        """ Depth first strategy """
-        print("\nRunning depth first search algorithm..\n")
+    # def depth_first_strategy(self):
+    #     """ Depth first strategy """
+    #     print("\nRunning depth first search algorithm..\n")
 
-        # generate lists
-        open_list = [] # set(unordered hashtable) with unexplored states
-        closed_set = set() # set with explored states (maybe not nessecary)
-        actions = ["up", "down", "right", "left"]
+    #     # generate lists
+    #     open_list = [] # set(unordered hashtable) with unexplored states
+    #     closed_set = set() # set with explored states (maybe not nessecary)
+    #     actions = ["up", "down", "right", "left"]
 
-        # start with initial state
-        open_list.append(self.state)
+    #     i = 0
+
+    #     # start with initial state
+    #     open_list.append(self.state)
         
-        #
-        while (len(open_list) > 0):
-            # pop the first element in open list
-            state = open_list.pop(0)
-            closed_set.add(state)
-            self.state = state
+    #     #
+    #     while (len(open_list) > 0):
+    #         # pop the first element in open list
+    #         self.state = open_list.pop(0)
+    #         # store the box positions and player position and add to closed list
+    #         state_info = self.get_state_info(self.state)
+    #         closed_set.add(state_info)
 
-            # Update boxes locations on the map
-            self.update_map()
+    #         # Update boxes locations on the map
+    #         self.update_map()
 
-            # if head is a goal => succes
-            if self.__is_solved__(state) == True:
-                return self.create_solution_seq()
+    #         # if head is a goal => succes
+    #         if self.__is_solved__(self.state) == True:
+    #             return self.create_solution_seq()
             
-            # keep searching
-            for action in actions:
-                new_state = self.action(action)
-                if new_state != None and new_state not in closed_set:
-                    open_list.insert(0, new_state)
+    #         # keep searching
+    #         for action in actions:
+    #             new_state = self.action(action)
+    #             if new_state != None:
+    #                 new_state_info = self.get_state_info(new_state)
+    #                 if new_state_info not in closed_set:
+    #                      open_list.insert(0, new_state)
 
-        return "No solutions found"
+    #         if i % 1 == 0:
+    #             print("States visited: ", len(closed_set))
+    #             print(self.data)
+    #             #i = 0
+    #         i += 1
+
+    #     return "No solutions found"
     
     def a_star(self):
         """ a star search algorithm """
