@@ -71,8 +71,8 @@ X.....X
 X.....X
 XG.X..X
 XG.JJ.X
-XGJ...X
-X.X..MX
+XGJJ..X
+XGX..MX
 XXXXXXX
 """
 

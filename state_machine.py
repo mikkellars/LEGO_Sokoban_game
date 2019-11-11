@@ -64,19 +64,21 @@ def controller(cargo):
 
     task = cargo[0]
     
-    if task == 'F':
+    if task == 'u':
         new_state = "forward"
         txt = "Going forward"
-    elif task == 'L':
+    elif task = 'U':
+         
+    elif task == 'l':
         new_state = "left"
         txt = "Turning left"
-    elif task == 'R':
+    elif task == 'r':
         new_state = "right"
         txt = "Turning right"
     elif task == 'T':
         new_state = "turn"
         txt = "Turning 180 degrees"
-    elif task == 'B':
+    elif task == 'd':
         new_state = "back"
         txt = "Going backwards"
     else:
