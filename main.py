@@ -1,17 +1,14 @@
 """ MAIN MODULE """
 
 ###############################################
-##               LIBARY IMPORT               ##
+##               LIBRARY IMPORT               ##
 ###############################################
-from state_machine import (
-    state_machine, start, controller, forward,
-    back, left, right, turn
-)
+import state_machine
 from controller import line_follower, play_music
 from collections import deque
 
-def sequence2behaviours(sequence):
-    """Converts the sequence to the build behaviours"""
+def sequence2behaviors(sequence):
+    """Converts the sequence to the build behaviors"""
 
     result = ""
     for i in range(len(sequence)):
@@ -59,7 +56,7 @@ def compass(sequence):
         result += current_char
 
         # if chars are equal no rotation needed
-        if prev_char == current_char or current_char == 'T':
+        if prev_char == current_char:
             continue
 
         # update compass
@@ -68,6 +65,8 @@ def compass(sequence):
         elif current_char == 'l':
             circular_queue.rotate(-1)
         elif current_char == 'd':
+            circular_queue.rotate(-2)
+        elif current_char == 'T': 
             circular_queue.rotate(-2)
         
         # update temp_seq
@@ -86,28 +85,29 @@ def compass(sequence):
 ###############################################
 def main():
     # get sequence
-    task_seq = "uurrddll"
+    task_seq = "uurRRdrUU"
     # txtFile = open("sequence.txt", 'r')
     # task_seq = txtFile.read()
     # txtFile.close()
 
-    # translate sequence to behaviours
-    task_seq = sequence2behaviours(task_seq)
+    # translate sequence to behaviors
+    task_seq = sequence2behaviors(task_seq)
     print(task_seq)
     task_seq = compass(task_seq)
     print(task_seq)
 
     # state machine
-    m = state_machine()
-    m.add_state("start", start)
-    m.add_state("controller", controller)
+    m = state_machine.state_machine()
+    m.add_state("start", state_machine.start)
+    m.add_state("ctrl", state_machine.controller)
     m.add_state("follow", line_follower.follow)
-    m.add_state("forward", forward)
-    m.add_state("left", left)
-    m.add_state("right", right)
-    m.add_state("turn", turn)
-    m.add_state("back", back)
-    m.add_state("End", None, end_state=1)
+    m.add_state("forward", state_machine.forward)
+    m.add_state("left", state_machine.left)
+    m.add_state("right", state_machine.right)
+    m.add_state("follow backwards", line_follower.follow_backwards)
+    m.add_state("backward", state_machine.backward)
+    m.add_state("back", state_machine.back)
+    m.add_state("end", state_machine.stop, end_state=1)
     m.set_start("start")
     m.run(task_seq)
 

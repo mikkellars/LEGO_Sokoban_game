@@ -109,7 +109,7 @@ class Solver:
 """ main """
 print("\n Program started\n")
 
-solver = Solver(sokoban_games.game6)
+solver = Solver(sokoban_games.game8)
 print("Board:")
 print(solver.board)
 print("Number of rows:", solver.nrows)

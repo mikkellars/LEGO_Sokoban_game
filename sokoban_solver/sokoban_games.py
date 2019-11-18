@@ -89,3 +89,13 @@ X.J.JMX
 X.....X
 X...XXX
 XXXXXXX"""
+
+game8= """\
+XXXXXXX
+X....GX
+X.....X
+X..J..X
+X.....X
+XM....X
+XXXXXXX
+"""
