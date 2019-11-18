@@ -6,7 +6,7 @@
 #import main
 from timeit import default_timer as timer
 from ev3dev2.motor import LargeMotor, MediumMotor, OUTPUT_A, OUTPUT_B, OUTPUT_D, MoveTank, SpeedPercent, MoveSteering
-from ev3dev2.sensor.lego import ColorSensor
+from ev3dev2.sensor.lego import ColorSensor, LightSensor
 from ev3dev2.sensor import INPUT_4, INPUT_1, INPUT_2
 
 from ev3dev2.sound import Sound
@@ -15,6 +15,7 @@ from ev3dev2.sound import Sound
 ###############################################
 i_cs_r          = ColorSensor(INPUT_4)
 i_cs_l          = ColorSensor(INPUT_1)
+i_cs_i          = LightSensor(INPUT_2)
 
 o_wheel_l       = LargeMotor(OUTPUT_A)
 o_wheel_r       = LargeMotor(OUTPUT_B)
@@ -26,43 +27,62 @@ o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
 ##              GLOBAL VARIABLES             ##
 ###############################################
 
-##           FORWARD LINE FOLLOW             ##
-LIGHT_INTENSITY_SCALE = 1.4
+# Follow line
+LIGHT_INTENSITY_SCALE = 1 # OPTIMAL SETTING 2
 
-##               INTERSECTION                ##
+# Intersection
 DETECT_INTER_DELAY = 0.6
-t1_cs_intersection = 100
-t2_cs_intersection = 0
+T1_CS_INTERSECTION = 100
+T2_CS_INTERSECTION = 0
 
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
 
+def intersection2():
+    result = False
+    if i_cs_i.reflected_light_intensity < 50:
+        result = True
+    return result
+
+def _update_scale():
+    """"""
+    global LIGHT_INTENSITY_SCALE
+    print("left wheel:", o_wheel_l.position)
+    print("right wheel:", o_wheel_r.position)
+
+    if o_wheel_l.position > 400 and o_wheel_r.position > 400:
+        LIGHT_INTENSITY_SCALE = 2
+        o_wheel_l.position = 99
+        o_wheel_r.position = 99
+    else:
+        LIGHT_INTENSITY_SCALE = 1
+
 def follow(cargo):
     """Follows a line and changes the state to controller if an intersection is reached"""
 
     global LIGHT_INTENSITY_SCALE
-    thresh = 10
-    minimum = -20
-
     new_state = "follow"
     txt = ""
 
-    speed_cs_r = i_cs_r.reflected_light_intensity / LIGHT_INTENSITY_SCALE    # OPTIMAL SETTING 2
+    speed_cs_r = i_cs_r.reflected_light_intensity / LIGHT_INTENSITY_SCALE
     speed_cs_l = i_cs_l.reflected_light_intensity / LIGHT_INTENSITY_SCALE 
     
     # Sharp corner add-on
-    # if i_cs_r.reflected_light_intensity < thresh and i_cs_r.reflected_light_intensity != 0:
-    #     speed_cs_r = minimum
-    # if i_cs_l.reflected_light_intensity < thresh and i_cs_l.reflected_light_intensity != 0:
-    #     speed_cs_l = minimum
-    
+    # if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
+    #     speed_cs_r = -20
+    # if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
+    #     speed_cs_l = -20
+
     o_wheel_l.duty_cycle_sp = speed_cs_l
     o_wheel_r.duty_cycle_sp = speed_cs_r
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
-    if intersection() is True:
+    # if intersection() is True:
+    #     new_state = "ctrl"
+    #     txt = "Reached intersection"
+    if intersection2() is True:
         new_state = "ctrl"
         txt = "Reached intersection"
     
@@ -74,24 +94,23 @@ def print_color_values():
 
 def intersection():
     """Detects intersections and returns true if one is spotted"""
-    global t1_cs_intersection
-    global t2_cs_intersection
-
+    global T1_CS_INTERSECTION
+    global T2_CS_INTERSECTION
     global DETECT_INTER_DELAY
 
     result = False
 
     if i_cs_l.reflected_light_intensity < 12 and i_cs_l.reflected_light_intensity != 0:
-        t1_cs_intersection = timer()
+        T1_CS_INTERSECTION = timer()
         # cs_l_val = i_cs_l.reflected_light_intensity
 
     if i_cs_r.reflected_light_intensity < 12 and i_cs_r.reflected_light_intensity != 0:
-        t2_cs_intersection = timer()
+        T2_CS_INTERSECTION = timer()
         # cs_r_val = i_cs_r.reflected_light_intensity
 
-    if abs(t1_cs_intersection - t2_cs_intersection) < DETECT_INTER_DELAY:
-        t1_cs_intersection = 100
-        t2_cs_intersection = 0
+    if abs(T1_CS_INTERSECTION - T2_CS_INTERSECTION) < DETECT_INTER_DELAY:
+        T1_CS_INTERSECTION = 100
+        T2_CS_INTERSECTION = 0
         result = True
         # print("Left color sensor value: " + str(cs_l_val))
         # print("Right color sensor value: " + str(cs_r_val))
@@ -100,7 +119,7 @@ def intersection():
 
 def run_forward():
     """Makes the robot go over intersection"""
-    o_both_wheel.on_for_seconds(20, 20, 0.5) # OPTIMAL VALUE 10, 10, 1
+    o_both_wheel.on_for_seconds(60, 60, 0.2, False) # OPTIMAL VALUE 10, 10, 1
 
 def run_backward():
     """Makes the robot go backwards over intersection"""

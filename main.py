@@ -95,7 +95,7 @@ def compass(sequence):
 ###############################################
 def main():
     # get sequence
-    task_seq = "uuuuudddduuuudddduuuudddduuuudddduuuudddduuuudddduuuudddd"
+    task_seq = "uuuuuddddduuuuuddddduuuuuddddd"
     # txtFile = open("sequence.txt", 'r')
     # task_seq = txtFile.read()
     # txtFile.close()
