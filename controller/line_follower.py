@@ -13,10 +13,14 @@ from ev3dev2.sound import Sound
 ###############################################
 ##                I/O DEFINING               ##
 ###############################################
+# Color sensor
 i_cs_r          = ColorSensor(INPUT_4)
 i_cs_l          = ColorSensor(INPUT_1)
-i_cs_i          = LightSensor(INPUT_2)
 
+# Light sensor
+i_ls          = LightSensor(INPUT_2)
+
+# Large motor
 o_wheel_l       = LargeMotor(OUTPUT_A)
 o_wheel_r       = LargeMotor(OUTPUT_B)
 o_both_wheel    = MoveTank(OUTPUT_A, OUTPUT_B)
@@ -26,22 +30,26 @@ o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
 ###############################################
 ##              GLOBAL VARIABLES             ##
 ###############################################
-
 # Follow line
-LIGHT_INTENSITY_SCALE = 1 # OPTIMAL SETTING 2
+CS_SCALE = 1 # OPTIMAL SETTING 2
+CS_BIAS = 20
 
 # Intersection
-DETECT_INTER_DELAY = 0.6
+DETECT_INTER_DELAY = 0.3
 T1_CS_INTERSECTION = 100
 T2_CS_INTERSECTION = 0
+
+# Intersection2
+LS_THRESH = 50
 
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
 
 def intersection2():
+    global LS_THRESH
     result = False
-    if i_cs_i.reflected_light_intensity < 50:
+    if i_ls.reflected_light_intensity < LS_THRESH:
         result = True
     return result
 
@@ -59,16 +67,21 @@ def _update_scale():
         LIGHT_INTENSITY_SCALE = 1
 
 def follow(cargo):
-    """Follows a line and changes the state to controller if an intersection is reached"""
-
-    global LIGHT_INTENSITY_SCALE
+    """
+    Follows a line and changes the state to controller if an intersection is reached
+    """
+    
+    global CS_SCALE
+    global CS_BIAS
+    
     new_state = "follow"
     txt = ""
 
-    speed_cs_r = i_cs_r.reflected_light_intensity / LIGHT_INTENSITY_SCALE
-    speed_cs_l = i_cs_l.reflected_light_intensity / LIGHT_INTENSITY_SCALE 
+    speed_cs_r = i_cs_r.reflected_light_intensity / CS_SCALE
+    speed_cs_l = i_cs_l.reflected_light_intensity / CS_SCALE
+    # speed_cs_r += CS_BIAS
+    # speed_cs_l += CS_BIAS
     
-    # Sharp corner add-on
     # if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
     #     speed_cs_r = -20
     # if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
@@ -79,12 +92,12 @@ def follow(cargo):
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
-    # if intersection() is True:
-    #     new_state = "ctrl"
-    #     txt = "Reached intersection"
-    if intersection2() is True:
+    if intersection() is True:
         new_state = "ctrl"
         txt = "Reached intersection"
+    # if intersection2() is True:
+    #     new_state = "ctrl"
+    #     txt = "Reached intersection"
     
     return (new_state, txt)
 
@@ -119,7 +132,7 @@ def intersection():
 
 def run_forward():
     """Makes the robot go over intersection"""
-    o_both_wheel.on_for_seconds(60, 60, 0.2, False) # OPTIMAL VALUE 10, 10, 1
+    o_both_wheel.on_for_seconds(40, 40, 0.2, False) # OPTIMAL VALUE 10, 10, 1
 
 def run_backward():
     """Makes the robot go backwards over intersection"""
@@ -132,17 +145,17 @@ def stop():
 
 def turn_left():
     """Turns the robot to the left"""
-    o_both_wheel.on_for_seconds(10, 10, 0.8) 
-    o_both_steering.on_for_rotations(-100, SpeedPercent(20), 0.7)  # OPTIMAL VALUE 0.5
+    o_both_wheel.on_for_seconds(40, 40, 0.35, False)
+    o_both_steering.on_for_rotations(-100, SpeedPercent(40), 0.5)  # OPTIMAL VALUE 0.5
 
 def turn_right():
     """Turns the robot to the right"""
-    o_both_wheel.on_for_seconds(10, 10, 0.8)   
-    o_both_steering.on_for_rotations(100, SpeedPercent(20), 0.7)  # OPTIMAL VALUE 0.5
+    o_both_wheel.on_for_seconds(40, 40, 0.35, False)   
+    o_both_steering.on_for_rotations(100, SpeedPercent(40), 0.5)  # OPTIMAL VALUE 0.5
 
 def turn():
     """Turns the robot 180 degrees"""
-    o_both_steering.on_for_rotations(100, SpeedPercent(20), 1.1) # OPTIMAL VALUE 1
+    o_both_steering.on_for_rotations(100, SpeedPercent(40), 1.1) # OPTIMAL VALUE 1
 
 def follow_backwards(cargo):
     """Makes the robot drive backwards towards intersection"""

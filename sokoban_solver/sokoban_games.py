@@ -92,10 +92,14 @@ XXXXXXX"""
 
 game8= """\
 XXXXXXX
-X....GX
 X.....X
-X..J..X
+XG....X
+X.X...X
+XXXX.XX
 X.....X
-XM....X
-XXXXXXX
-"""
+X.J...X
+X..XXXX
+X....MX
+X.....X
+X...XXX
+XXXXXXX"""

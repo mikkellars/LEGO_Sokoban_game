@@ -95,10 +95,10 @@ def compass(sequence):
 ###############################################
 def main():
     # get sequence
-    task_seq = "uuuuuddddduuuuuddddduuuuuddddd"
-    # txtFile = open("sequence.txt", 'r')
-    # task_seq = txtFile.read()
-    # txtFile.close()
+    task_seq = "uldruldruldruldruldr"
+    #txtFile = open("sequence.txt", 'r')
+    #task_seq = txtFile.read()
+    #txtFile.close()
 
     # translate sequence to behaviors
     task_seq = sequence2behaviors(task_seq)

@@ -47,12 +47,12 @@ class state_machine:
             
             (new_state, cargo) = handler(cargo)
             
-            if cargo != "":
-                print(cargo)
+            # if cargo != "":
+            #     print(cargo)
             
             # check if a end states is reaches
             if new_state.upper() in self.end_states:
-                print("Reached", new_state)
+                # print("Reached", new_state)
                 line_follower.stop()
                 play_music.sound()
                 break
@@ -61,7 +61,7 @@ class state_machine:
                 if new_state == "ctrl":
                     TASK_SEQ = TASK_SEQ[1:]
                     cargo = TASK_SEQ
-                    print(cargo)
+                    #print(cargo)
 
                 # change handler to new_state's handler
                 handler = self.handlers[new_state.upper()]
@@ -106,7 +106,7 @@ def forward(cargo):
     """Goes forward and changes the state to follow."""
     # If intersection is reached change state
     line_follower.run_forward()
-    print("Running forward")
+    #print("Running forward")
 
     # return
     new_state = "follow"
@@ -117,7 +117,7 @@ def left(cargo):
     """Turns the robot to the left and changes the state to follow."""
     # When the robot has turned left change state to follow
     line_follower.turn_left()
-    print("Turning left")
+    #print("Turning left")
 
     # return
     new_state = "follow"
@@ -128,7 +128,7 @@ def right(cargo):
     """Turns the robot to the right and changes the state to follow."""
     # When the robot has turned right change state to forward
     line_follower.turn_right()
-    print("Turning right")
+    #print("Turning right")
     
     # return
     new_state = "follow"
@@ -137,7 +137,7 @@ def right(cargo):
 
 def backward(cargo):
     # When the robot has turned 180 degrees change state to forward
-    print("Go away from  jewl")
+    #print("Go away from  jewl")
     line_follower.run_backward()
 
     # return
