@@ -3,7 +3,17 @@
 ###############################################
 ##               LIBRARY IMPORT               ##
 ###############################################
-import state_machine
+from state_machine import (
+    state_machine,
+    forward,
+    start,
+    controller,
+    back,
+    backward,
+    left,
+    right,
+    stop
+)
 from controller import line_follower, play_music
 from collections import deque
 
@@ -85,7 +95,7 @@ def compass(sequence):
 ###############################################
 def main():
     # get sequence
-    task_seq = "uurRRdrUU"
+    task_seq = "uuuuudddduuuudddduuuudddduuuudddduuuudddduuuudddduuuudddd"
     # txtFile = open("sequence.txt", 'r')
     # task_seq = txtFile.read()
     # txtFile.close()
@@ -97,17 +107,17 @@ def main():
     print(task_seq)
 
     # state machine
-    m = state_machine.state_machine()
-    m.add_state("start", state_machine.start)
-    m.add_state("ctrl", state_machine.controller)
+    m = state_machine()
+    m.add_state("start", start)
+    m.add_state("ctrl", controller)
     m.add_state("follow", line_follower.follow)
-    m.add_state("forward", state_machine.forward)
-    m.add_state("left", state_machine.left)
-    m.add_state("right", state_machine.right)
+    m.add_state("forward", forward)
+    m.add_state("left", left)
+    m.add_state("right", right)
     m.add_state("follow backwards", line_follower.follow_backwards)
-    m.add_state("backward", state_machine.backward)
-    m.add_state("back", state_machine.back)
-    m.add_state("end", state_machine.stop, end_state=1)
+    m.add_state("backward", backward)
+    m.add_state("back", back)
+    m.add_state("end", stop, end_state=1)
     m.set_start("start")
     m.run(task_seq)
 

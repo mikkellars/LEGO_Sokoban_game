@@ -26,9 +26,11 @@ o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
 ##              GLOBAL VARIABLES             ##
 ###############################################
 
-###############################################
-##                  TIMERS                   ##
-###############################################
+##           FORWARD LINE FOLLOW             ##
+LIGHT_INTENSITY_SCALE = 1.4
+
+##               INTERSECTION                ##
+DETECT_INTER_DELAY = 0.6
 t1_cs_intersection = 100
 t2_cs_intersection = 0
 
@@ -38,16 +40,23 @@ t2_cs_intersection = 0
 
 def follow(cargo):
     """Follows a line and changes the state to controller if an intersection is reached"""
+
+    global LIGHT_INTENSITY_SCALE
+    thresh = 10
+    minimum = -20
+
     new_state = "follow"
     txt = ""
 
-    speed_cs_r = i_cs_r.reflected_light_intensity / 1.5    # OPTIMAL SETTING 2
-    speed_cs_l = i_cs_l.reflected_light_intensity / 1.5 
+    speed_cs_r = i_cs_r.reflected_light_intensity / LIGHT_INTENSITY_SCALE    # OPTIMAL SETTING 2
+    speed_cs_l = i_cs_l.reflected_light_intensity / LIGHT_INTENSITY_SCALE 
+    
     # Sharp corner add-on
-    if i_cs_r.reflected_light_intensity < 10 and i_cs_r.reflected_light_intensity != 0:
-        speed_cs_r = -20
-    if i_cs_l.reflected_light_intensity < 10 and i_cs_l.reflected_light_intensity != 0:
-        speed_cs_l = -20
+    # if i_cs_r.reflected_light_intensity < thresh and i_cs_r.reflected_light_intensity != 0:
+    #     speed_cs_r = minimum
+    # if i_cs_l.reflected_light_intensity < thresh and i_cs_l.reflected_light_intensity != 0:
+    #     speed_cs_l = minimum
+    
     o_wheel_l.duty_cycle_sp = speed_cs_l
     o_wheel_r.duty_cycle_sp = speed_cs_r
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
@@ -67,6 +76,9 @@ def intersection():
     """Detects intersections and returns true if one is spotted"""
     global t1_cs_intersection
     global t2_cs_intersection
+
+    global DETECT_INTER_DELAY
+
     result = False
 
     if i_cs_l.reflected_light_intensity < 12 and i_cs_l.reflected_light_intensity != 0:
@@ -77,7 +89,7 @@ def intersection():
         t2_cs_intersection = timer()
         # cs_r_val = i_cs_r.reflected_light_intensity
 
-    if abs(t1_cs_intersection - t2_cs_intersection) < 0.2: # OPTIMAL VALUE 0.04
+    if abs(t1_cs_intersection - t2_cs_intersection) < DETECT_INTER_DELAY:
         t1_cs_intersection = 100
         t2_cs_intersection = 0
         result = True
@@ -111,7 +123,7 @@ def turn_right():
 
 def turn():
     """Turns the robot 180 degrees"""
-    o_both_steering.on_for_rotations(100, SpeedPercent(20), 1.2) # OPTIMAL VALUE 1
+    o_both_steering.on_for_rotations(100, SpeedPercent(20), 1.1) # OPTIMAL VALUE 1
 
 def follow_backwards(cargo):
     """Makes the robot drive backwards towards intersection"""
