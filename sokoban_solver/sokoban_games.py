@@ -103,3 +103,12 @@ X....MX
 X.....X
 X...XXX
 XXXXXXX"""
+
+game2019 = """\
+XXXXXXXXXXXX
+XX...X.....X
+XX...X.GG..X
+XXJJJ.XGGXXX
+X.J....MXXXX
+X...X...XXXX
+XXXXXXXXXXXX"""

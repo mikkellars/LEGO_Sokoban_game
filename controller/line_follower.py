@@ -35,7 +35,7 @@ CS_SCALE = 1 # OPTIMAL SETTING 2
 CS_BIAS = 20
 
 # Intersection
-DETECT_INTER_DELAY = 0.3
+DETECT_INTER_DELAY = 0.6
 T1_CS_INTERSECTION = 100
 T2_CS_INTERSECTION = 0
 
@@ -92,12 +92,12 @@ def follow(cargo):
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
-    if intersection() is True:
-        new_state = "ctrl"
-        txt = "Reached intersection"
-    # if intersection2() is True:
+    # if intersection() is True:
     #     new_state = "ctrl"
     #     txt = "Reached intersection"
+    if intersection2() is True:
+        new_state = "ctrl"
+        txt = "Reached intersection"
     
     return (new_state, txt)
 
