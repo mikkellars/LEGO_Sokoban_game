@@ -15,11 +15,16 @@ XXXXXX"""
 
 game2= """\
 XXXXXXX
-XG..J.X
-XGJ...X
-XGX...X
-XXXXJXX
-X...M.X
+XG....X
+X.....X
+X.X...X
+XXXX.XX
+X.J...X
+X.....X
+X..XXXX
+X....MX
+X.....X
+X...XXX
 XXXXXXX"""
 
 game3= """\
@@ -70,3 +75,17 @@ XGJ...X
 X.X..MX
 XXXXXXX
 """
+
+game7= """\
+XXXXXXX
+XG....X
+XG....X
+XGXG.GX
+XXXXJXX
+X.J...X
+X.J...X
+X..XXXX
+X.J.JMX
+X.....X
+X...XXX
+XXXXXXX"""

@@ -25,10 +25,7 @@ class State:
     """ Class for storing a state """
     def __init__(self, player_position, box_positions=None, previous_state=None, action=None):
         """ constructs the class """
-        # previous state
         self.previous_state = previous_state
-        
-        # list of box positions (row, col, idx)
         self.box_positions = box_positions
         self.player_position = player_position
         self.action = action
@@ -187,7 +184,6 @@ class SokobanSolver:
         elif action == "l":
             pos = (row, col-1)
             pos2 = (row, col-2)
-
         # get char at new position
         char = map[pos]
 
@@ -212,7 +208,6 @@ class SokobanSolver:
                 boxes[idx] = pos2
                 new_state = State(pos, box_positions=boxes, previous_state=state, action=action)
                 return new_state
-
         # no valid action avaliable
         return None
 
@@ -294,7 +289,7 @@ class SokobanSolver:
         # return seq[::-1]
 
     def get_state_info(self, state):
-        """"""
+        """Return the state info (player position and box positions) as one tuple"""
         result = []
         action = state.get_action()
         result.append(action)
@@ -314,7 +309,6 @@ class SokobanSolver:
             Search the shallowest nodes in the search tree first.
             Search through tge successors of a problem to find a goal."""
         print("\nRunning breadth first search algorithm..\n")
-
         # generate lists
         open_queue = deque()
         closed_set = set() # set with explored states (maybe not nessecary)

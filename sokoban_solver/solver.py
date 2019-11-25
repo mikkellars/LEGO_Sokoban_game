@@ -18,17 +18,18 @@ import sys
 import sokoban_games 
 import numpy as np
 import time
+from collections import deque
 
 class State:
     """ Class for storing a state """
-    def __init__(self, player_position, box_positions=None, previous_state=None):
+    def __init__(self, player_position, action=None, box_positions=None, previous_state=None):
         """ constructs the class """
         # previous state
         self.previous_state = previous_state
-        
         # list of box positions (row, col, idx)
         self.box_positions = box_positions
         self.player_position = player_position
+        self.action = action
 
 class SokobanSolver:
     """ Class for solving a sokoban board """
@@ -325,30 +326,30 @@ class SokobanSolver:
         print("\nRunning breadth first search algorithm..\n")
 
         # generate lists
-        open_set = [] # set(unordered hashtable) with unexplored states
-        closed_set = set() # set with explored states (maybe not nessecary)
+        open_que = deque()
+        closed = set()
         actions = ["up", "down", "right", "left"]
 
         # start with initial state
-        open_set.append(self.state)
+        open_que.append(self.state)
         
         # 
         i = 0
-        while (len(open_set) > 0):
+        while open:
             # pop the first element in open list
-            state = open_set.pop(0)
+            state = open_que.popleft()
             self.state = state
 
             # store the box positions and player position and add to closed list
             state_info = self.get_state_info(state)
-            closed_set.add(state_info)
+            closed.add(state_info)
 
             # Update boxes locations on the map
             self.update_map()
 
             # if head is a goal => succes
             if self.__is_solved__(state) == True:
-                print("States visited: ", len(closed_set))
+                print("States visited: ", len(closed))
                 return self.create_solution_seq()
             
             # keep searching
@@ -356,11 +357,11 @@ class SokobanSolver:
                 new_state = self.action(action)
                 if new_state != None:
                     new_state_info = self.get_state_info(new_state)
-                    if new_state_info not in closed_set:
-                        open_set.append(new_state)
+                    if new_state_info not in closed and new_state not in open_que:
+                        open_que.append(new_state)
             
             if i % 100000 == 0:
-                print("States visited: ", len(closed_set))
+                print("States visited: ", len(closed))
                 i = 0
             i += 1
 
@@ -408,7 +409,7 @@ class SokobanSolver:
     
 """ main """
 print("\nProgram started\n")
-solver = SokobanSolver(sokoban_games.game4)
+solver = SokobanSolver(sokoban_games.game2)
 print("The initial board:")
 print(solver.board)
 print("Goal positions: ", solver.goal_points)

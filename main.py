@@ -8,16 +8,16 @@ from state_machine import (
     back, left, right, turn
 )
 from controller import line_follower, play_music
-from sokoban_solver.solver import Problem
+#from sokoban_solver.solver import Problem
 
 ###############################################
 ##              Main function                ##
 ###############################################
 def main():
 
-    problem = Problem("START", "SOKOBAN GAME SOLVED")
+    #problem = Problem("START", "SOKOBAN GAME SOLVED")
     
-    task_sequence = "SFFLR"
+    task_sequence = "FFFFF"
 
     # STATE MACHINE
     m = state_machine()
