@@ -109,7 +109,7 @@ class Solver:
 """ main """
 print("\n Program started\n")
 
-solver = Solver(sokoban_games.game2)
+solver = Solver(sokoban_games.game2019)
 print("Board:")
 print(solver.board)
 print("Number of rows:", solver.nrows)
@@ -118,5 +118,9 @@ solution = solver.breadth_first_search()
 t2 = time.time()
 print("Solutions sequence:", solution)
 print("Time to generate solution:", t2-t1, "seconds")
+
+txtFile = open("sequence.txt", 'w')
+txtFile.write(solution)
+txtFile.close()
 
 print("\n Program ended\n")

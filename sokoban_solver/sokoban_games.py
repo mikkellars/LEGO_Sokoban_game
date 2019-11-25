@@ -71,8 +71,8 @@ X.....X
 X.....X
 XG.X..X
 XG.JJ.X
-XGJ...X
-X.X..MX
+XGJJ..X
+XGX..MX
 XXXXXXX
 """
 
@@ -89,3 +89,26 @@ X.J.JMX
 X.....X
 X...XXX
 XXXXXXX"""
+
+game8= """\
+XXXXXXX
+X.....X
+XG....X
+X.X...X
+XXXX.XX
+X.....X
+X.J...X
+X..XXXX
+X....MX
+X.....X
+X...XXX
+XXXXXXX"""
+
+game2019 = """\
+XXXXXXXXXXXX
+XX...X.....X
+XX...X.GG..X
+XXJJJ.XGGXXX
+X.J....MXXXX
+X...X...XXXX
+XXXXXXXXXXXX"""
