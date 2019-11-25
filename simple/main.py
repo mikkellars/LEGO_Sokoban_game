@@ -29,7 +29,7 @@ o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
 ##              GLOBAL VARIABLES             ##
 ###############################################
 # Follow line
-CS_SCALE = 1 # OPTIMAL SETTING 2
+CS_SCALE = 1.1 # OPTIMAL SETTING 2
 CS_BIAS = 20
 
 # Intersection
@@ -46,6 +46,8 @@ LS_THRESH = 50
 
 def intersection2():
     global LS_THRESH
+    global i_ls
+
     result = False
     if i_ls.reflected_light_intensity < LS_THRESH:
         result = True
@@ -68,12 +70,17 @@ def follow():
     """
     Follows a line and changes the state to controller if an intersection is reached
     """
-    
+    global i_cs_r
+    global i_cs_l
+    global o_wheel_r
+    global o_wheel_l
+
     global CS_SCALE
     global CS_BIAS
     
     speed_cs_r = i_cs_r.reflected_light_intensity / CS_SCALE
     speed_cs_l = i_cs_l.reflected_light_intensity / CS_SCALE
+
     # speed_cs_r += CS_BIAS
     # speed_cs_l += CS_BIAS
     
@@ -97,6 +104,9 @@ def follow():
 
 def intersection():
     """Detects intersections and returns true if one is spotted"""
+    global i_cs_r
+    global i_cs_l
+
     global T1_CS_INTERSECTION
     global T2_CS_INTERSECTION
     global DETECT_INTER_DELAY
@@ -122,33 +132,45 @@ def intersection():
 
 def run_forward():
     """Makes the robot go over intersection"""
-    o_both_wheel.on_for_seconds(40, 40, 0.2, False) # OPTIMAL VALUE 10, 10, 1
+    global o_both_wheel
+    o_both_wheel.on_for_seconds(40, 40, 0.35, False) # OPTIMAL VALUE 10, 10, 1
 
 def run_backward():
     """Makes the robot go backwards over intersection"""
-    o_both_wheel.on_for_seconds(-10, -10, 1.25)
+    global o_both_wheel
+    o_both_wheel.on_for_seconds(-40, -40, 0.35)
 
 def stop():
     """Stops the robot"""
-    o_wheel_l.command = LargeMotor.COMMAND_STOP
-    o_wheel_r.command = LargeMotor.COMMAND_STOP
+    global o_both_wheel
+    o_both_wheel.on_for_seconds(1, 1, 0.1, True)
 
 def turn_left():
     """Turns the robot to the left"""
-    o_both_wheel.on_for_seconds(40, 40, 0.35, False)
+    global o_both_wheel
+    global o_both_steering
+
+    o_both_wheel.on_for_seconds(43, 43, 0.35, False)
     o_both_steering.on_for_rotations(-100, SpeedPercent(40), 0.5)  # OPTIMAL VALUE 0.5
 
 def turn_right():
     """Turns the robot to the right"""
-    o_both_wheel.on_for_seconds(40, 40, 0.35, False)   
+    global o_both_wheel
+    global o_both_steering
+    
+    o_both_wheel.on_for_seconds(43, 43, 0.35, False)   
     o_both_steering.on_for_rotations(100, SpeedPercent(40), 0.5)  # OPTIMAL VALUE 0.5
 
 def turn():
     """Turns the robot 180 degrees"""
+    global o_both_steering
+
     o_both_steering.on_for_rotations(100, SpeedPercent(40), 1.1) # OPTIMAL VALUE 1
 
 def follow_backwards():
     """Makes the robot drive backwards towards intersection"""
+    global o_wheel_r
+    global o_wheel_l
 
     speed_cs_r = -i_cs_r.reflected_light_intensity / 5
     speed_cs_l = -i_cs_l.reflected_light_intensity / 5
@@ -161,8 +183,6 @@ def follow_backwards():
     
     o_wheel_l.duty_cycle_sp =  speed_cs_r 
     o_wheel_r.duty_cycle_sp =  speed_cs_l 
-    print(o_wheel_l.duty_cycle_sp)
-    print(o_wheel_r.duty_cycle_sp)
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
@@ -172,6 +192,9 @@ def follow_backwards():
     
 def follow_turn():
     """Follows a line and changes the state to controller if an intersection is reached"""
+    global o_wheel_l
+    global o_wheel_r
+
     speed_cs_r = i_cs_r.reflected_light_intensity / 2
     speed_cs_l = i_cs_l.reflected_light_intensity / 2 
     # Sharp corner add-on
@@ -210,7 +233,12 @@ def sequence2behaviors(sequence):
                 result += current_char.lower()
                 result += current_char.lower()
             elif prev_char.isupper():
-                result += current_char.lower()
+                if prev_char == current_char:
+                    result += current_char.lower()
+                else:
+                    result += 'T'
+                    result += current_char.lower()
+                    result += current_char.lower()
             else:
                 result += current_char.lower()
                 result += current_char.lower()
@@ -270,11 +298,13 @@ def main():
     task_seq = txtFile.read()
     txtFile.close()
 
+    #task_seq = "ldruldruldruldruldruldruldru"
+
     # translate sequence to behaviors
+    # print(task_seq)
     task_seq = sequence2behaviors(task_seq)
-    print(task_seq)
+    # print(task_seq)
     task_seq = compass(task_seq)
-    print(task_seq)
 
     task_seq_list = list(task_seq)
     

@@ -119,7 +119,7 @@ t2 = time.time()
 print("Solutions sequence:", solution)
 print("Time to generate solution:", t2-t1, "seconds")
 
-txtFile = open("sequence.txt", 'w')
+txtFile = open("../simple/sequence.txt", 'w')
 txtFile.write(solution)
 txtFile.close()
 
