@@ -33,7 +33,7 @@ o_both_steering = MoveSteering('outA', 'outB')
 ###############################################
 # Follow line
 CS_SCALE = 1 # OPTIMAL SETTING 1.1
-CS_BIAS = 20
+CS_BIAS = 10
 
 # Intersection
 DETECT_INTER_DELAY = 0.6
@@ -81,8 +81,14 @@ def follow():
     global CS_SCALE
     global CS_BIAS
     
-    speed_cs_r = i_cs_r.reflected_light_intensity / CS_SCALE
-    speed_cs_l = i_cs_l.reflected_light_intensity / CS_SCALE
+    speed_cs_r = i_cs_r.reflected_light_intensity / CS_SCALE 
+    speed_cs_l = i_cs_l.reflected_light_intensity / CS_SCALE 
+
+    if speed_cs_l > 100:
+        speed_cs_l = 100
+    if speed_cs_r > 100:
+        speed_cs_r = 100
+
 
     # speed_cs_r += CS_BIAS
     # speed_cs_l += CS_BIAS
@@ -212,82 +218,6 @@ def follow_turn():
 
     return intersection()
 
-def sequence2behaviors(sequence):
-    """Converts the sequence to the build behaviors"""
-
-    result = ""
-    for i in range(len(sequence)):
-        # get the characters
-        current_char = sequence[i]
-        # next_char = sequence[i+1]
-        if (i != 0):
-            prev_char = sequence[i-1]
-        else:
-            prev_char = ''
-
-        if current_char.islower():
-            if prev_char.isupper():
-                result += 'T'
-                result += current_char
-            else:
-                result += current_char
-        elif current_char.isupper():
-            if prev_char.islower():
-                result += current_char.lower()
-                result += current_char.lower()
-            elif prev_char.isupper():
-                if prev_char == current_char:
-                    result += current_char.lower()
-                else:
-                    result += 'T'
-                    result += current_char.lower()
-                    result += current_char.lower()
-            else:
-                result += current_char.lower()
-                result += current_char.lower()
-    return result
-
-def compass(sequence):
-    """Keeps track of the robot position on the map"""
-
-    temp_seq = list(sequence)
-    result = ""
-    circular_queue = deque(['u', 'r', 'd', 'l'], maxlen=4)
-    char2idx = {'u':0, 'r':1, 'd':2, 'l':3}
-    for i in range(len(temp_seq)):
-        # get chars
-        current_char = temp_seq[i]
-        if i != 0:
-            prev_char = temp_seq[i-1]
-        else:
-            prev_char = ''
-
-        # insert char
-        result += current_char
-
-        # if chars are equal no rotation needed
-        if prev_char == current_char:
-            continue
-
-        # update compass
-        if current_char == 'r':
-            circular_queue.rotate(1)
-        elif current_char == 'l':
-            circular_queue.rotate(-1)
-        elif current_char == 'd':
-            circular_queue.rotate(-2)
-        elif current_char == 'T': 
-            circular_queue.rotate(-2)
-        
-        # update temp_seq
-        for j, char in enumerate(sequence):
-            if char == 'T':
-                continue
-            idx = char2idx[char]
-            new_char = circular_queue[idx]
-            temp_seq[j] = new_char
-        
-    return result
 
 
 ###############################################
@@ -302,20 +232,24 @@ def main():
     txtFile.close()
 
    # task_seq = "ldruldruldruldruldruldruldru" # ROUND IN CIRCLE
-    task_seq = "UruulDrddlUruulDrddl"
-
+   # task_seq = "UruulDrddlUruulDrddl"
+   # task_seq = "uuuuuuuuuu";
     # translate sequence to behaviors
     # print(task_seq)
-    task_seq = sequence2behaviors(task_seq)
-    # print(task_seq)
-    task_seq = compass(task_seq)
 
     task_seq_list = list(task_seq)
     
+    time.sleep(2)
+
     while(len(task_seq_list) != 0):
         action = task_seq_list.pop(0)
+        next_action = task_seq_list[0]
         if action == 'u':
-            run_forward()
+            if next_action == 'u':
+                while(intersection2()):
+                    o_both_wheel.on_for_seconds(100, 100, 0.5, False, False)
+            else:
+                run_forward()
         elif action == 'l':
             turn_left()
         elif action == 'r':
