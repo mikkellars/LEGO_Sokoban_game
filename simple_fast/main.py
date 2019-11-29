@@ -6,9 +6,10 @@
 ###############################################
 from timeit import default_timer as timer
 #from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B, MoveTank, SpeedPercent, MoveSteering
-#from ev3dev2.sensor.lego import ColorSensor, LightSensor
+from ev3dev2.sensor.lego import LightSensor
 #from ev3dev2.sensor import INPUT_4, INPUT_1, INPUT_2
 from ev3fast import *
+from ev3dev2.motor import MoveTank
 from collections import deque
 
 ###############################################
@@ -31,7 +32,7 @@ o_both_steering = MoveSteering('outA', 'outB')
 ##              GLOBAL VARIABLES             ##
 ###############################################
 # Follow line
-CS_SCALE = 1.1 # OPTIMAL SETTING 2
+CS_SCALE = 1 # OPTIMAL SETTING 1.1
 CS_BIAS = 20
 
 # Intersection
@@ -167,7 +168,7 @@ def turn():
     """Turns the robot 180 degrees"""
     global o_both_steering
 
-    o_both_steering.on_for_rotations(100, SpeedPercent(40), 1.1) # OPTIMAL VALUE 1
+    o_both_steering.on_for_rotations(100, SpeedPercent(40), 1) # OPTIMAL VALUE 1
 
 def follow_backwards():
     """Makes the robot drive backwards towards intersection"""
@@ -300,7 +301,8 @@ def main():
     task_seq = txtFile.read()
     txtFile.close()
 
-    #task_seq = "ldruldruldruldruldruldruldru"
+   # task_seq = "ldruldruldruldruldruldruldru" # ROUND IN CIRCLE
+    task_seq = "UruulDrddlUruulDrddl"
 
     # translate sequence to behaviors
     # print(task_seq)
