@@ -1,3 +1,4 @@
+#!/usr/bin/env micropython
 """ MOTOR CONTROL MODULE """
 
 ###############################################
@@ -7,26 +8,24 @@ from timeit import default_timer as timer
 #from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B, MoveTank, SpeedPercent, MoveSteering
 #from ev3dev2.sensor.lego import ColorSensor, LightSensor
 #from ev3dev2.sensor import INPUT_4, INPUT_1, INPUT_2
-from ev3fast.motor import LargeMotor, OUTPUT_A, OUTPUT_B, MoveTank, SpeedPercent, MoveSteering
-from ev3fast.sensor.lego import ColorSensor, LightSensor
-from ev3fast.sensor import INPUT_4, INPUT_1, INPUT_2
+from ev3fast import *
 from collections import deque
 
 ###############################################
 ##                I/O DEFINING               ##
 ###############################################
 # Color sensor
-i_cs_r          = ColorSensor(INPUT_4)
-i_cs_l          = ColorSensor(INPUT_1)
+i_cs_r          = ColorSensor('in4')
+i_cs_l          = ColorSensor('in1')
 
 # Light sensor
-i_ls            = LightSensor(INPUT_2)
+i_ls            = LightSensor('in2')
 
 # Large motor
-o_wheel_l       = LargeMotor(OUTPUT_A)
-o_wheel_r       = LargeMotor(OUTPUT_B)
-o_both_wheel    = MoveTank(OUTPUT_A, OUTPUT_B)
-o_both_steering = MoveSteering(OUTPUT_A, OUTPUT_B)
+o_wheel_l       = LargeMotor('outA')
+o_wheel_r       = LargeMotor('outB')
+o_both_wheel    = MoveTank('outA', 'outB')
+o_both_steering = MoveSteering('outA', 'outB')
 
 ###############################################
 ##              GLOBAL VARIABLES             ##
