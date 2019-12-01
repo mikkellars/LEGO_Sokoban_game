@@ -161,17 +161,12 @@ def main():
 
     # task_seq = "ldruldruldruldruldruldruldru" # ROUND IN CIRCLE
     # task_seq = "UruulDrddlUruulDrddl"
-    task_seq = "llllllll"
+    # task_seq = "llllllll"
 
     task_seq_list = list(task_seq)
 
     while(len(task_seq_list) != 0):
         action = task_seq_list.pop(0)
-
-        if len(task_seq_list) != 0:
-            next_action = task_seq_list[0]
-        else:
-            next_action = ''
         
         if action == 'u':
             while(intersection2()):
