@@ -32,8 +32,10 @@ o_both_steering = MoveSteering('outA', 'outB')
 ##              GLOBAL VARIABLES             ##
 ###############################################
 # Follow line
-CS_SCALE = 1.1 # OPTIMAL SETTING 1.1
-CS_BIAS = 0
+# CS_SCALE = 1 # OPTIMAL SETTING 1.1
+# CS_BIAS = 10
+SPEED_REDUCTION = 45
+MAX_SPEED = 90
 
 # Intersection
 DETECT_INTER_DELAY = 0.6
@@ -46,6 +48,25 @@ LS_THRESH = 50
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
+
+def turn_left2():
+    o_both_wheel.on_for_seconds(43, 43, 0.35, False)
+    
+    turn_right_sensor = True
+    while turn_right_sensor:
+        if i_cs_r.reflected_light_intensity < 12:
+            turn_right_sensor = False
+        
+        o_wheel_l.duty_cycle_sp = 0
+        o_wheel_r.duty_cycle_sp = 40
+        o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
+        o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
+
+    o_wheel_l.duty_cycle_sp = 0
+    o_wheel_r.duty_cycle_sp = 0
+    o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
+    o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
+
 
 def intersection2():
     global LS_THRESH
@@ -64,12 +85,20 @@ def follow():
     global i_cs_l
     global o_wheel_r
     global o_wheel_l
-
-    global CS_SCALE
-    global CS_BIAS
     
-    speed_cs_r = i_cs_r.reflected_light_intensity / CS_SCALE + CS_BIAS
-    speed_cs_l = i_cs_l.reflected_light_intensity / CS_SCALE + CS_BIAS
+    global SPEED_REDUCTION
+    global MAX_SPEED
+    
+    i_cs_r_val = i_cs_r.reflected_light_intensity
+    i_cs_l_val = i_cs_l.reflected_light_intensity
+
+    if i_cs_r_val == 0:
+        i_cs_r_val = 1
+    if i_cs_l_val == 0:
+        i_cs_l_val = 1
+
+    speed_cs_l = MAX_SPEED - (1 - (i_cs_l_val / (i_cs_l_val + i_cs_r_val))) * SPEED_REDUCTION
+    speed_cs_r = MAX_SPEED - (1 - (i_cs_r_val / (i_cs_l_val + i_cs_r_val))) * SPEED_REDUCTION
 
     if speed_cs_l > 100:
         speed_cs_l = 100
@@ -78,13 +107,14 @@ def follow():
 
     o_wheel_l.duty_cycle_sp = speed_cs_l
     o_wheel_r.duty_cycle_sp = speed_cs_r
+
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
 def run_forward():
     """Makes the robot go over intersection"""
     global o_both_wheel
-    o_both_wheel.on_for_seconds(50, 50, 0.35, False) # OPTIMAL VALUE 10, 10, 1
+    o_both_wheel.on_for_seconds(40, 40, 0.35, False) # OPTIMAL VALUE 10, 10, 1
 
 def run_backward():
     """Makes the robot go backwards over intersection"""
@@ -122,8 +152,6 @@ def turn():
 ##              Main function                ##
 ###############################################
 def main():
-    global CS_BIAS
-
     time.sleep(2)
 
     # get sequence
@@ -133,19 +161,26 @@ def main():
 
     # task_seq = "ldruldruldruldruldruldruldru" # ROUND IN CIRCLE
     # task_seq = "UruulDrddlUruulDrddl"
-    # task_seq = "uuuruuur"
-    task_seq_list = list(task_seq)
+    task_seq = "llllllll"
 
-    time.sleep(2)
+    task_seq_list = list(task_seq)
 
     while(len(task_seq_list) != 0):
         action = task_seq_list.pop(0)
 
+        if len(task_seq_list) != 0:
+            next_action = task_seq_list[0]
+        else:
+            next_action = ''
+        
         if action == 'u':
-            CS_BIAS = 20
-            run_forward()
+            while(intersection2()):
+                o_wheel_l.duty_cycle_sp = 75
+                o_wheel_r.duty_cycle_sp = 75
+                o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
+                o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
         elif action == 'l':
-            turn_left()
+            turn_left2()
         elif action == 'r':
             turn_right()
         elif action == 'd':
@@ -158,6 +193,7 @@ def main():
         while not result: # true when intersection
             follow()
             result = intersection2()
+
     stop()
 
 if __name__ == "__main__":
