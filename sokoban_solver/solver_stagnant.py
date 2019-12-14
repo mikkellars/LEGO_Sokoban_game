@@ -14,12 +14,14 @@
 """
 
 """ IMPORTS """
+import os
 import sys
 import sokoban_games 
 import numpy as np
 import time
 from collections import deque # list-like container with fast appends and pops on either end
 import copy
+import psutil
 
 class State:
     """ Class for storing a state """
@@ -308,7 +310,12 @@ class SokobanSolver:
         """Breadth first strategy
             Search the shallowest nodes in the search tree first.
             Search through tge successors of a problem to find a goal."""
+        
         print("\nRunning breadth first search algorithm..\n")
+
+        # get time
+        t1 = time.time()
+
         # generate lists
         open_queue = deque()
         closed_set = set() # set with explored states (maybe not nessecary)
@@ -317,8 +324,8 @@ class SokobanSolver:
         # start with initial state
         current_map = self.data
         open_queue.append(self.state)
-        # 
-        i = 0
+
+        # i = 0
         while open_queue:
             # pop the first element in open list
             current_state = open_queue.popleft()
@@ -343,13 +350,18 @@ class SokobanSolver:
                     if new_state_info not in closed_set:
                         open_queue.append(new_state)
             
-            if i % 100000 == 0:
-               
-                print("States visited: ", len(closed_set))
-                #print(current_state.get_action())
-                print(current_map)
-                i = 0
-            i += 1
+            # if i % 100000 == 0:
+            #     print("States visited: ", len(closed_set))
+            #     #print(current_state.get_action())
+            #     print(current_map)
+            #     i = 0
+            # i += 1
+
+            # check if 15 min has passed
+            t2 = time.time()
+            if (t2 - t1) > 900:
+                print("Time exceeded 15 min")
+                return "No sulotions found"
 
         return "No solutions found"
 
@@ -405,15 +417,44 @@ class SokobanSolver:
 
     
 """ main """
+
 print("\nProgram started\n")
-solver = SokobanSolver(sokoban_games.game3)
-print("The initial board:")
-print(solver.board)
-print("Goal positions: ", solver.goal_points)
-print("Box positions: ", solver.state.box_positions)
-t1 = time.time()
-seq = solver.breadth_first_strategy()
-t2 = time.time()
-print("Solution: ", seq)
-print("Time: ", t2 - t1, " [s]")
+
+# get games
+games = list()
+games.append(sokoban_games.game1)
+games.append(sokoban_games.game2)
+games.append(sokoban_games.game3)
+games.append(sokoban_games.game4)
+games.append(sokoban_games.game5)
+
+# solve all games
+times = list()
+memories = list
+for game in games:
+    solver = SokobanSolver(game)
+    
+    print("The initial board:")
+    print(solver.board)
+    
+    print("Goal positions: ", solver.goal_points)
+    print("Box positions: ", solver.state.box_positions)
+    
+    t1 = time.time()
+    seq = solver.breadth_first_strategy()
+    t2 = time.time()
+
+    print("Solution: ", seq)
+    print("Time: ", t2 - t1, " [s]")
+
+    pid = os.getpid()
+    process = psutil.Process(pid)
+    print("Memory usage:", process.memory_info()[0])
+
+    times.append((t2-t1))
+    memories.append(process.memory_info()[0])
+
+for time in times:
+    print(time)
+
 print("\nProgram ended\n")

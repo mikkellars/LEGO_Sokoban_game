@@ -32,7 +32,7 @@ o_both_steering = MoveSteering('outA', 'outB')
 ##              GLOBAL VARIABLES             ##
 ###############################################
 # Follow line
-CS_SCALE = 1.1 # OPTIMAL SETTING 1.1
+CS_SCALE = 1.4 # OPTIMAL SETTING 1.1
 CS_BIAS = 0
 
 # Intersection
@@ -78,6 +78,7 @@ def follow():
 
     o_wheel_l.duty_cycle_sp = speed_cs_l
     o_wheel_r.duty_cycle_sp = speed_cs_r
+
     o_wheel_l.command = LargeMotor.COMMAND_RUN_DIRECT
     o_wheel_r.command = LargeMotor.COMMAND_RUN_DIRECT
 
@@ -89,7 +90,7 @@ def run_forward():
 def run_backward():
     """Makes the robot go backwards over intersection"""
     global o_both_wheel
-    o_both_wheel.on_for_seconds(-40, -40, 0.35)
+    o_both_wheel.on_for_seconds(-40, -40, 0.35, False)
 
 def stop():
     """Stops the robot"""
@@ -136,13 +137,20 @@ def main():
     # task_seq = "uuuruuur"
     task_seq_list = list(task_seq)
 
-    time.sleep(2)
-
     while(len(task_seq_list) != 0):
         action = task_seq_list.pop(0)
 
+        if len(task_seq_list) != 0:
+            next_action = task_seq_list[0]
+        else:
+            next_action = ''
+        
+        CS_BIAS = 0
+        if next_action == 'u':
+            CS_BIAS = 30
+
         if action == 'u':
-            CS_BIAS = 20
+            CS_BIAS = 30
             run_forward()
         elif action == 'l':
             turn_left()
@@ -158,6 +166,7 @@ def main():
         while not result: # true when intersection
             follow()
             result = intersection2()
+
     stop()
 
 if __name__ == "__main__":
