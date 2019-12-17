@@ -430,11 +430,11 @@ games.append(sokoban_games.game5)
 
 # solve all games
 times = list()
-memories = list
+memories = list()
 for game in games:
     solver = SokobanSolver(game)
     
-    print("The initial board:")
+    print("\nThe initial board:")
     print(solver.board)
     
     print("Goal positions: ", solver.goal_points)
@@ -443,18 +443,26 @@ for game in games:
     t1 = time.time()
     seq = solver.breadth_first_strategy()
     t2 = time.time()
-
     print("Solution: ", seq)
+
     print("Time: ", t2 - t1, " [s]")
 
     pid = os.getpid()
     process = psutil.Process(pid)
-    print("Memory usage:", process.memory_info()[0])
+    memory = process.memory_info()[0] * pow(10, -6)
+    print("Memory usage:", memory)
 
     times.append((t2-t1))
-    memories.append(process.memory_info()[0])
+    memories.append(memory)
 
+# print times
+print("Times -->")
 for time in times:
     print(time)
+
+# print memory
+print("Memory usage -->")
+for memory in memories:
+    print(memory)
 
 print("\nProgram ended\n")

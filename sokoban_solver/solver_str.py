@@ -1,10 +1,12 @@
 """"""
 
 # IMPORTS
+import os
 import sys
 import time
 from collections import deque
 import sokoban_games
+import psutil
 
 # GLOBALS
 goal_map = player_map = ""
@@ -61,7 +63,9 @@ class Solver:
         """Breadth first strategy
             Search the shallowest nodes in the search tree first.
             Search through tge successors of a problem to find a goal."""
+
         print("\nRunning breadth first search...\n")
+        
         open = deque([(player_map, "", px, py)])
         visited = set([player_map])
         actions = (
@@ -70,6 +74,9 @@ class Solver:
             (0,     1,  'd',    'D'),   # down
             (-1,    0,  'l',    'L')    # left
         )
+
+        t1 = time.time()
+
         while open:
             current_map, seq, x, y = open.popleft()
             for action in actions:
@@ -104,7 +111,13 @@ class Solver:
                             print("States visited: ", len(visited))
                             return seq + action[2]
                         open.append((data, seq + action[2], x+dx, y+dy))
-                        visited.add(data)     
+                        visited.add(data)
+            
+            # check if 15 mins has passed
+            t2 = time.time()
+            if (t2 - t1) > 900:
+                print("No solutions found under 15 min.")
+                return "No solutions found"
                         
 def sequence2behaviors(sequence):
     """Converts the sequence to the build behaviors"""
@@ -185,26 +198,51 @@ def compass(sequence):
 
 
 """ main """
-print("\n Program started\n")
+print("\nProgram started\n")
 
-solver = Solver(sokoban_games.easy)
-print("Board:")
-print(solver.board)
-print("Number of rows:", solver.nrows)
-t1 = time.time()
-solution = solver.breadth_first_search()
-t2 = time.time()
-print("Solutions sequence:", solution)
-print("Time to generate solution:", t2-t1, "seconds")
+# get games
+games = list()
+games.append(sokoban_games.game1)
+games.append(sokoban_games.game2)
+games.append(sokoban_games.game3)
+games.append(sokoban_games.game4)
+games.append(sokoban_games.game5)
 
-solution = sequence2behaviors(solution)
-print("Sequence to behaviours:", solution)
+# solve all games
+times = list()
+memories = list()
+for game in games:
+    goal_map = player_map = ""
+    px = py = 0
 
-solution = compass(solution)
-print("Compass:", solution)
+    solver = Solver(game)
+    
+    print("\nThe initial board:")
+    print(solver.board)
+    
+    t1 = time.time()
+    seq = solver.breadth_first_search()
+    t2 = time.time()
+    print("Solution: ", seq)
 
-txtFile = open("../simple_fast/sequence.txt", 'w')
-txtFile.write(solution)
-txtFile.close()
+    print("Time: ", t2 - t1, " [s]")
 
-print("\n Program ended\n")
+    pid = os.getpid()
+    process = psutil.Process(pid)
+    memory = process.memory_info()[0] * pow(10, -6)
+    print("Memory usage:", memory)
+
+    times.append((t2-t1))
+    memories.append(memory)
+
+# print times
+print("Times -->")
+for time in times:
+    print(time)
+
+# print memory
+print("Memory usage -->")
+for memory in memories:
+    print(memory)
+
+print("\nProgram ended\n")
