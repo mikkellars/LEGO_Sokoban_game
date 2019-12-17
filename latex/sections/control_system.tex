@@ -1,0 +1,51 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+\section{Design of the Robots Control System} \label{sec:control_system}
+
+The design of the control system for the robot will be describe in this section. The control system design used is a hybrid, which is split into two parts: one system controlling the robot and one system planning the path to solve the sokoban game. Firstly, the control of the robot will be elaborated. Secondly, the external path planner will be explained.
+
+
+\subsection{Controlling the Robot} \label{subsec:controlling}
+Behavior based control system divides the overall problem into behaviors, where each behavior is responsible to solve the task correctly. In contrast to classical robot control where a central controller controls the whole system and normally is advanced and difficult to modify, behavior based systems are easy to modify and have a fast prototype pipeline. Thus the control of the LEGO Mindstorm Robot is done as a behavior based system.  
+
+The behaviors in behavior based systems can be interconnected with each other to either overrule one behavior from another or to give inputs to a behavior to modify the it. All the behaviors used to solve the sokoban game is shown in table \ref{tab:behaviours}. 
+
+\textbf{Follow}\\
+The follow behavior is used to keep the robot onto the line of the sokoban map. It is designed as 
+
+\textbf{Intersection}\\
+
+
+\textbf{Forward}\\
+
+
+\textbf{Backwards}\\
+
+
+\textbf{Turn left}\\
+
+
+\textbf{Turn right}\\
+
+
+\textbf{Turn 180}\\
+
+
+\todo{Descion rules switching between behevoirs}
+
+
+\subsection{A Algorithm to Solve a Sokoban Game} \label{subsec:sokoban_solver}
+This section describes how the sokoban game will be represented, in order to solve the sokoban game. An approach, to solve a sokoban game, is to use a graph search algorithm, thus, the game must be represented as a search graph. This can be done by representing the game as states and actions, where each states are a node in the graph and each actions makes transitions between the nodes. Different ideas of state representations is described below.
+
+\textbf{The Representation of a State:}\\
+The first idea was to store each state as the whole map. This is an easy method to implement, but the method will have high memory usage, because it stores static information for every state. Thus, another approach which stores only the non-static information is considered. The second idea, is to store the boxes position and the player position for each state, thereby, only storing the elements of the sokoban game which can change. Furthermore, a static map is stored to keep track of the legal moves the player can make. To further memory optimize a linkage between the connecting states can be implemented, thus, only saving the elements which were affected by the action.
+
+\textbf{Available Actions for the Sokoban Player:}\\
+In a sokoban game the player can move up, down, right and left. By making this the representation for the actions the different states represents the player moving around in the environment and the boxes. \todo{Skriv hvorfor nødvendigt at have stort for at skuppe}
+
+\textbf{The Graph Search Algorithm:}\\
+\todo{Test vores egen løsning versus modificeret}
+
+\subsection{"Glue"} \label{sec:combination}
+
+\end{document}

@@ -1,0 +1,13 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+\section{Conclusion} \label{sec:conclusion}
+Throughout the report, a LEGO Mindstorm EV3 robot and a path planner algorithm were designed to solve a Sokoban puzzle.
+
+The LEGO Mindstorm robot's final design was with two color sensors to follow a line and one light intensity sensor to detect intersections. Moreover, a set of behaviors was conducted making the robot able to move on a Sokoban map. The final design was able to perform right turns, left turns and detect intersections with no failure at any color sensor scaling tested. However, when performing a $180$ degree turn the robot's robustness was only deemed acceptable at a color sensor scaling of $1.5$. The robot is able to solve the final map, shown in Figure \ref{subfig:map5}, with a color sensor scaling value of $1$ in $5$ minutes.
+
+The final path planner stores in each state the player position, walls, jewels, and free space, and uses a breadth first search algorithm. The final path planner is able to create a sequence of actions that solves the final map, shown in figure \ref{subfig:map5}, in $18.781$ seconds with a memory usage of $99.533$ MegaBytes.
+
+For binding the hybrid system together, a "glue" was designed to translate the sequence from the path planner to a sequence the robot control system could understand. The two main problems the "glue" solved was the position of the robot after pushing a jewel, and the orientation of the robot when navigating on the Sokoban map. After the translation, the robot could successfully understand the sequence generated from the path planner algorithm. 
+
+\end{document}

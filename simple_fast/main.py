@@ -11,6 +11,7 @@ from ev3dev2.sensor.lego import LightSensor
 from ev3fast import *
 from ev3dev2.motor import MoveTank
 from collections import deque
+# from ev3dev2.sound import Sound
 
 ###############################################
 ##                I/O DEFINING               ##
@@ -32,7 +33,7 @@ o_both_steering = MoveSteering('outA', 'outB')
 ##              GLOBAL VARIABLES             ##
 ###############################################
 # Follow line
-CS_SCALE = 1.4 # OPTIMAL SETTING 1.1
+CS_SCALE = 1.25 # OPTIMAL SETTING 1.1
 CS_BIAS = 0
 
 # Intersection
@@ -46,6 +47,10 @@ LS_THRESH = 50
 ###############################################
 ##                FUNCTIONS                  ##
 ###############################################
+
+# def sound():
+#     my_sound = Sound()
+#     my_sound.tone([ (392, 350, 100) ])
 
 def intersection2():
     global LS_THRESH
@@ -131,26 +136,22 @@ def main():
     txtFile = open("sequence.txt", 'r')
     task_seq = txtFile.read()
     txtFile.close()
-
-    # task_seq = "ldruldruldruldruldruldruldru" # ROUND IN CIRCLE
-    # task_seq = "UruulDrddlUruulDrddl"
-    # task_seq = "uuuruuur"
     task_seq_list = list(task_seq)
 
     while(len(task_seq_list) != 0):
         action = task_seq_list.pop(0)
 
-        if len(task_seq_list) != 0:
-            next_action = task_seq_list[0]
-        else:
-            next_action = ''
+        # if len(task_seq_list) != 0:
+        #     next_action = task_seq_list[0]
+        # else:
+        #     next_action = ''
         
-        CS_BIAS = 0
-        if next_action == 'u':
-            CS_BIAS = 30
+        # CS_BIAS = 0
+        # if next_action == 'u':
+        #     CS_BIAS = 30
 
         if action == 'u':
-            CS_BIAS = 30
+            # CS_BIAS = 30
             run_forward()
         elif action == 'l':
             turn_left()
@@ -168,6 +169,18 @@ def main():
             result = intersection2()
 
     stop()
+   
+    # for cnt in range(10):
+    #     i = 0
+    #     while ( i < 10):
+    #         follow()
+    #         result = intersection2()
+
+    #         if result == True:
+    #             run_backward()
+    #             result = False
+    #             i += 1
+    #     print("Count -->", cnt)
 
 if __name__ == "__main__":
     main()

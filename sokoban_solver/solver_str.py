@@ -187,7 +187,7 @@ def compass(sequence):
 """ main """
 print("\n Program started\n")
 
-solver = Solver(sokoban_games.game2019)
+solver = Solver(sokoban_games.easy)
 print("Board:")
 print(solver.board)
 print("Number of rows:", solver.nrows)
@@ -198,8 +198,10 @@ print("Solutions sequence:", solution)
 print("Time to generate solution:", t2-t1, "seconds")
 
 solution = sequence2behaviors(solution)
+print("Sequence to behaviours:", solution)
 
 solution = compass(solution)
+print("Compass:", solution)
 
 txtFile = open("../simple_fast/sequence.txt", 'w')
 txtFile.write(solution)

@@ -1,9 +1,9 @@
-# game0 = """\
-# XXXXXX
-# XGJ..X
-# X....X
-# XM...X
-# XXXXXX"""
+easy = """\
+XXXXXX
+XG...X
+X.J..X
+XM...X
+XXXXXX"""
 
 # game1 = """\
 # XXXXXX

@@ -1,0 +1,18 @@
+\documentclass[../report.tex]{subfiles}
+\begin{document}
+
+\section{Discussion}
+
+\subsection*{Informed Search Algorithm}
+In \autoref{sec:solver}, the used search algorithm was breadth first search which is an exhaustive search, thus a smarter search algorithm could have been used. For example, A*, which introduces a heuristic cost by computing the cost to reach the node, $g(n)$, and the cost to get from the node to the goal, $h(n)$. By combining $g(n)$ and $h(n)$ the cost of the cheapest solution through $n$, $f(n)$, is estimated. Thereby, when the goal is to find the cheapest solution, A* tries the node with the lowest value of $f(n)$. However, the difficult thing with A* is to calculate $f(n)$. A solution to estimate the heuristic could be to used breadth-first search, which was described in \autoref{sec:solver}.
+
+\subsection*{Fail with Behavior Forward}
+In \autoref{subsec:robot_eval} it was described that a large percentile of the failures were caused by the behavior forward. This was due to the robot being located skew relative to an intersection and after an intersection detection, running the behavior forward would result in the robot going off the map. A solution could be a lower speed and time length in the behavior forward when running over an intersection. However, when the speed and time length was lowered the robot would sometimes get stuck at intersections when pushing jewels, due to the behavior follow would activate before running over an intersection. 
+
+\subsection*{Potential Divider}
+When testing the robot it was observed that the robot could make large direction changes when trying to follow a line due to low color sensor scaling. This made the robot unstable and slower when trying to drive in a straight line. A solution to this problem is to make a potential divider \cite{potential_divider} between the readings of the color sensors, resulting in less difference between the readings. This solution also makes the robot able to drive straight over an intersection without using the behavior forward.  
+
+\subsection*{Faster ev3dev Library}
+It was observed that the official library \cite{ev3dev_lang_python} sometimes caused inconsistent sensor readings. Research showed that a lighter third party library \cite{ev3dev_fast_python} was programmed to get higher pulling rates from the sensors. The results of the source \cite{ev3dev_fast_python_test} showed an improvement up to 11x faster pulling-rate on the color sensor if using the third party library. Thus, the whole third party library should be implemented on the robot. For even further optimization the programming language NXC \cite{nxc} could have been used. NXC showed faster loop time when doing a line follower benchmark in \cite{ev3dev_fast_python}, than python on ev3dev and python on ev3dev with ev3fast.
+
+\end{document}
